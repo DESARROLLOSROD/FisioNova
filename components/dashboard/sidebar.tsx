@@ -10,10 +10,12 @@ import {
     Settings,
     FileText,
     Activity,
-    LogOut
+    LogOut,
+    Shield
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
+import { useEffect, useState } from 'react'
 
 const routes = [
     {
@@ -57,7 +59,25 @@ const routes = [
 export function DashboardSidebar() {
     const pathname = usePathname()
     const router = useRouter()
-    const supabase = createClient()
+    const [isAdmin, setIsAdmin] = useState(false)
+
+    useEffect(() => {
+        const checkRole = async () => {
+            const { data: { user } } = await supabase.auth.getUser()
+            if (user) {
+                const { data: profile } = await supabase
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', user.id)
+                    .single()
+
+                if (profile?.role === 'super_admin') {
+                    setIsAdmin(true)
+                }
+            }
+        }
+        checkRole()
+    }, [supabase])
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
@@ -100,6 +120,26 @@ export function DashboardSidebar() {
                             </div>
                         </Link>
                     ))}
+
+                    {isAdmin && (
+                        <Link
+                            href="/dashboard/admin"
+                            className={cn(
+                                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer rounded-xl transition-all duration-200 relative overflow-hidden",
+                                pathname.startsWith('/dashboard/admin')
+                                    ? "bg-gradient-to-r from-red-600/20 to-orange-600/20 text-red-400 border border-red-500/10"
+                                    : "text-slate-400 hover:text-white hover:bg-white/5"
+                            )}
+                        >
+                            {pathname.startsWith('/dashboard/admin') && (
+                                <div className="absolute left-0 top-0 h-full w-1 bg-red-500 rounded-r-full" />
+                            )}
+                            <div className="flex items-center flex-1 z-10">
+                                <Shield className={cn("h-5 w-5 mr-3 transition-colors", pathname.startsWith('/dashboard/admin') ? "text-red-400" : "text-slate-500 group-hover:text-red-400")} />
+                                Super Admin
+                            </div>
+                        </Link>
+                    )}
                 </div>
             </div>
 
