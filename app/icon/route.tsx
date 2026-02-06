@@ -1,23 +1,18 @@
 import { ImageResponse } from 'next/og'
+import { NextRequest } from 'next/server'
 
-// Route segment config
 export const runtime = 'edge'
 
-// Image metadata
-export const size = {
-    width: 32,
-    height: 32,
-}
-export const contentType = 'image/png'
+export async function GET(request: NextRequest) {
+    const { searchParams } = new URL(request.url)
+    const sizeParam = searchParams.get('size')
+    const size = sizeParam ? parseInt(sizeParam) : 32
 
-// Image generation
-export default function Icon() {
     return new ImageResponse(
         (
-            // ImageResponse JSX element
             <div
                 style={{
-                    fontSize: 24,
+                    fontSize: size * 0.6, // Scale font size
                     background: '#2563eb',
                     width: '100%',
                     height: '100%',
@@ -25,18 +20,16 @@ export default function Icon() {
                     alignItems: 'center',
                     justifyContent: 'center',
                     color: 'white',
-                    borderRadius: 8,
+                    borderRadius: size * 0.1, // Scale border radius
                     fontWeight: 800,
                 }}
             >
                 FN
             </div>
         ),
-        // ImageResponse options
         {
-            // For convenience, we can re-use the exported icons size metadata
-            // config to also set the ImageResponse's width and height.
-            ...size,
+            width: size,
+            height: size,
         }
     )
 }
