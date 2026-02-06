@@ -68,7 +68,7 @@ export function DashboardSidebar() {
             const { data: { user } } = await supabase.auth.getUser()
 
             if (user) {
-                console.log("👤 Sidebar: User found:", user.email)
+                console.log("👤 Sidebar: User found:", user.email, "| ID:", user.id)
                 const { data: role, error } = await supabase.rpc('get_my_role')
                 console.log("🛡️ Sidebar: RPC Result:", { role, error })
 
