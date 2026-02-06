@@ -25,7 +25,7 @@ export default async function SettingsPage() {
         )
     }
 
-    const clinic = profile.clinics
+    const clinic = profile.clinics as any
 
     return (
         <div className="p-8 space-y-8 max-w-4xl mx-auto">
