@@ -2,7 +2,7 @@
 
 import { createClinic } from '@/lib/actions/admin'
 import { useRouter } from 'next/navigation'
-import { useActionState } from 'react'
+import { useActionState, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 
 // Initial State for the form
@@ -11,10 +11,41 @@ const initialState = {
     error: undefined,
 }
 
+// Helper function to generate slug from name
+function generateSlug(name: string): string {
+    return name
+        .toLowerCase()
+        .normalize('NFD') // Normalize to decompose accented characters
+        .replace(/[\u0300-\u036f]/g, '') // Remove diacritics
+        .replace(/[^a-z0-9\s-]/g, '') // Remove special characters
+        .trim()
+        .replace(/\s+/g, '-') // Replace spaces with hyphens
+        .replace(/-+/g, '-') // Replace multiple hyphens with single hyphen
+}
+
 export default function NewClinicPage() {
     const router = useRouter()
+    const [clinicName, setClinicName] = useState('')
+    const [slug, setSlug] = useState('')
+    const [autoSlug, setAutoSlug] = useState(true) // Track if slug is auto-generated
+
     // @ts-ignore - Types for useActionState can be tricky with Server Actions in some versions
     const [state, formAction, isPending] = useActionState(createClinic, initialState)
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newName = e.target.value
+        setClinicName(newName)
+
+        // Only auto-update slug if user hasn't manually edited it
+        if (autoSlug) {
+            setSlug(generateSlug(newName))
+        }
+    }
+
+    const handleSlugChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setSlug(e.target.value)
+        setAutoSlug(false) // User manually edited slug
+    }
 
     return (
         <div className="max-w-2xl mx-auto space-y-8">
@@ -41,6 +72,8 @@ export default function NewClinicPage() {
                             name="name"
                             type="text"
                             required
+                            value={clinicName}
+                            onChange={handleNameChange}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Ej. Clínica FisioNova Centro"
                         />
@@ -54,6 +87,8 @@ export default function NewClinicPage() {
                             name="slug"
                             type="text"
                             required
+                            value={slug}
+                            onChange={handleSlugChange}
                             className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                             placeholder="Ej. fisionova-centro"
                         />
