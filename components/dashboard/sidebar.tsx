@@ -66,13 +66,9 @@ export function DashboardSidebar() {
         const checkRole = async () => {
             const { data: { user } } = await supabase.auth.getUser()
             if (user) {
-                const { data: profile } = await supabase
-                    .from('profiles')
-                    .select('role')
-                    .eq('id', user.id)
-                    .maybeSingle()
+                const { data: role, error } = await supabase.rpc('get_my_role')
 
-                if (profile?.role === 'super_admin') {
+                if (!error && role === 'super_admin') {
                     setIsAdmin(true)
                 }
             }
