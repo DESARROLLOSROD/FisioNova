@@ -7,24 +7,30 @@ export default async function DashboardPage() {
     const { data: { user } } = await supabase.auth.getUser()
 
     // Fetch basic profile info
-    const { data: profile } = await supabase
-        .from('profiles')
-        .select('full_name, role, clinic_id, clinics(name)')
-        .eq('id', user!.id)
-        .single()
+    // Fetch basic profile info via RPC or safe select
+    // Using RPC for role/clinic_id to be safe against RLS
+    const { data: profileData } = await supabase.rpc('get_my_profile_data')
+
+    // Fallback if RPC doesn't exist yet, we stick to the select but handle null
+    const profile = profileData || (await supabase.from('profiles').select('full_name, role, clinic_id, clinics(name)').eq('id', user!.id).maybeSingle()).data
 
     const clinicId = profile?.clinic_id
 
     // Fetch Real Stats (Parallel)
-    const [appointmentsQuery, patientsQuery] = await Promise.all([
-        supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId!),
-        supabase.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId!)
-    ])
+    // Only fetch if clinicId exists
+    let appointmentsCount = 0
+    let patientsCount = 0
 
-    const appointmentsCount = appointmentsQuery.count || 0
-    const patientsCount = patientsQuery.count || 0
+    if (clinicId) {
+        const [appointmentsQuery, patientsQuery] = await Promise.all([
+            supabase.from('appointments').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId),
+            supabase.from('patients').select('*', { count: 'exact', head: true }).eq('clinic_id', clinicId)
+        ])
+        appointmentsCount = appointmentsQuery.count || 0
+        patientsCount = patientsQuery.count || 0
+    }
 
-    const clinics = profile?.clinics
+    const clinics = (profile as any)?.clinics
     const clinicName = Array.isArray(clinics)
         ? clinics[0]?.name
         : (clinics as any)?.name || 'Sin Clínica Asignada'
