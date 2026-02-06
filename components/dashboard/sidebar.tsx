@@ -37,8 +37,20 @@ const routes = [
         active: (pathname: string) => pathname.startsWith('/dashboard/patients'),
     },
     {
-        label: 'Expedientes',
+        label: 'Fisioterapeutas',
         icon: Activity,
+        href: '/dashboard/physiotherapists',
+        active: (pathname: string) => pathname.startsWith('/dashboard/physiotherapists'),
+    },
+    {
+        label: 'Usuarios',
+        icon: Shield,
+        href: '/dashboard/users',
+        active: (pathname: string) => pathname.startsWith('/dashboard/users'),
+    },
+    {
+        label: 'Expedientes',
+        icon: FileText,
         href: '/dashboard/emr',
         active: (pathname: string) => pathname.startsWith('/dashboard/emr'),
     },
