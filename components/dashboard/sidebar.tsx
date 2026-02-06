@@ -64,13 +64,22 @@ export function DashboardSidebar() {
 
     useEffect(() => {
         const checkRole = async () => {
+            console.log("🔍 Sidebar: Checking Role...")
             const { data: { user } } = await supabase.auth.getUser()
+
             if (user) {
+                console.log("👤 Sidebar: User found:", user.email)
                 const { data: role, error } = await supabase.rpc('get_my_role')
+                console.log("🛡️ Sidebar: RPC Result:", { role, error })
 
                 if (!error && role === 'super_admin') {
+                    console.log("✅ Sidebar: Admin access granted")
                     setIsAdmin(true)
+                } else {
+                    console.log("❌ Sidebar: Admin access denied. Role is:", role)
                 }
+            } else {
+                console.log("❌ Sidebar: No user found")
             }
         }
         checkRole()
