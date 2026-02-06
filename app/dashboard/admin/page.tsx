@@ -5,7 +5,20 @@ import { Plus, Building2, MapPin, Phone } from "lucide-react";
 export const dynamic = "force-dynamic";
 
 export default async function AdminDashboardPage() {
-    const clinics = await getClinics();
+    const result = await getClinics();
+
+    // Handle error case
+    if ('error' in result) {
+        return (
+            <div className="space-y-6">
+                <div className="bg-destructive/15 text-destructive p-4 rounded-md">
+                    Error: {result.error}
+                </div>
+            </div>
+        );
+    }
+
+    const clinics = result;
 
     return (
         <div className="space-y-6">

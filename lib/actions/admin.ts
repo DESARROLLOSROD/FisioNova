@@ -28,7 +28,9 @@ export async function getClinics() {
 
     // Verify Super Admin (Double check on server action for safety)
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('No autenticado')
+    if (!user) {
+        return { error: 'No autenticado' }
+    }
 
     const { data: profile } = await supabase
         .from('profiles')
@@ -37,7 +39,7 @@ export async function getClinics() {
         .single()
 
     if (profile?.role !== 'super_admin') {
-        throw new Error('No autorizado: Requiere rol super_admin')
+        return { error: 'No autorizado: Requiere rol super_admin' }
     }
 
     const { data: clinics, error } = await supabase
@@ -45,17 +47,23 @@ export async function getClinics() {
         .select('*')
         .order('created_at', { ascending: false })
 
-    if (error) throw new Error(error.message)
+    if (error) {
+        return { error: error.message }
+    }
 
     return clinics as Clinic[]
 }
 
-export async function createClinic(formData: FormData) {
+export async function createClinic(prevState: any, formData: FormData) {
     const supabase = await createClient()
 
     // Verify Super Admin
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) throw new Error('No autenticado')
+    if (!user) {
+        return {
+            message: 'No autenticado',
+        }
+    }
 
     const { data: profile } = await supabase
         .from('profiles')
@@ -64,7 +72,9 @@ export async function createClinic(formData: FormData) {
         .single()
 
     if (profile?.role !== 'super_admin') {
-        throw new Error('No autorizado')
+        return {
+            message: 'No autorizado: Requiere rol super_admin',
+        }
     }
 
     // Validate Input
