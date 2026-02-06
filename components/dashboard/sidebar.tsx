@@ -59,6 +59,7 @@ const routes = [
 export function DashboardSidebar() {
     const pathname = usePathname()
     const router = useRouter()
+    const supabase = createClient()
     const [isAdmin, setIsAdmin] = useState(false)
 
     useEffect(() => {
