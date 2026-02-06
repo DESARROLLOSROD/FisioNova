@@ -70,7 +70,7 @@ export function DashboardSidebar() {
                     .from('profiles')
                     .select('role')
                     .eq('id', user.id)
-                    .single()
+                    .maybeSingle()
 
                 if (profile?.role === 'super_admin') {
                     setIsAdmin(true)
