@@ -2,7 +2,7 @@ import { getDashboardMetrics, getRevenueChartData, getTodayAppointments } from '
 import MetricCard from '@/components/dashboard/MetricCard'
 import RevenueChart from '@/components/dashboard/RevenueChart'
 import AppointmentTimeline from '@/components/dashboard/AppointmentTimeline'
-import { Users, Calendar, DollarSign, Activity } from 'lucide-react'
+import { Users, Calendar, DollarSign, Activity } from '@/components/ui/icons'
 
 export const dynamic = 'force-dynamic'
 
