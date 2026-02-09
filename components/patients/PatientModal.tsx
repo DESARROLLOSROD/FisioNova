@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { createPatient } from '@/lib/actions/patients'
+import { grantPortalAccess } from '@/lib/actions/patient-portal-access'
 
 interface PatientModalProps {
     isOpen: boolean
@@ -21,15 +22,22 @@ export default function PatientModal({ isOpen, onClose, onSuccess }: PatientModa
         setError('')
 
         const formData = new FormData(e.currentTarget)
+        const grantAccess = formData.get('grant_portal_access') === 'on'
 
         try {
-            await createPatient({
+            const patient = await createPatient({
                 first_name: formData.get('first_name') as string,
                 last_name: formData.get('last_name') as string,
                 email: formData.get('email') as string,
                 phone: formData.get('phone') as string,
                 birth_date: formData.get('birth_date') as string || undefined
             })
+
+            // Grant portal access if checkbox is checked and email exists
+            if (grantAccess && patient.email) {
+                await grantPortalAccess(patient.id)
+            }
+
             onSuccess()
             onClose()
         } catch (err) {
@@ -81,6 +89,20 @@ export default function PatientModal({ isOpen, onClose, onSuccess }: PatientModa
                                 <label className="block text-sm font-medium text-slate-700">Fecha Nacimiento</label>
                                 <input type="date" name="birth_date" className="mt-1 block w-full rounded-md border-slate-300 shadow-sm border p-2 bg-slate-50" />
                             </div>
+                        </div>
+
+                        <div className="mt-4 p-4 bg-blue-50 rounded-lg border border-blue-200">
+                            <label className="flex items-center gap-2 cursor-pointer">
+                                <input
+                                    type="checkbox"
+                                    name="grant_portal_access"
+                                    className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+                                />
+                                <div>
+                                    <span className="text-sm font-medium text-slate-900">Dar acceso al portal del paciente</span>
+                                    <p className="text-xs text-slate-600 mt-0.5">Se enviará un email con las credenciales de acceso</p>
+                                </div>
+                            </label>
                         </div>
 
                         <div className="flex justify-end gap-2 mt-6">

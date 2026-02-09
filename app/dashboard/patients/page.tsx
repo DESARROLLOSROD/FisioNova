@@ -2,9 +2,11 @@
 
 import { useEffect, useState } from 'react'
 import { searchPatients } from '@/lib/actions/patients'
+import { grantPortalAccess, checkPatientHasAccess } from '@/lib/actions/patient-portal-access'
 import PatientModal from '@/components/patients/PatientModal'
 import Link from 'next/link'
 import PageHeader from '@/components/ui/PageHeader'
+import { Key, ShieldOff } from 'lucide-react'
 
 interface Patient {
     id: string
@@ -12,6 +14,8 @@ interface Patient {
     last_name: string
     email: string | null
     phone: string | null
+    hasPortalAccess?: boolean
+    grantingAccess?: boolean
 }
 
 export default function PatientsPage() {
@@ -25,11 +29,40 @@ export default function PatientsPage() {
         const fetchPatients = async () => {
             setLoading(true)
             const data = await searchPatients(search)
-            setPatients(data as Patient[])
+
+            // Check portal access for each patient
+            const patientsWithAccess = await Promise.all(
+                (data as Patient[]).map(async (patient) => {
+                    const accessInfo = await checkPatientHasAccess(patient.id)
+                    return {
+                        ...patient,
+                        hasPortalAccess: accessInfo.hasAccess
+                    }
+                })
+            )
+
+            setPatients(patientsWithAccess)
             setLoading(false)
         }
         fetchPatients()
     }, [search, refreshKey])
+
+    const handleGrantAccess = async (patientId: string) => {
+        setPatients(prev => prev.map(p =>
+            p.id === patientId ? { ...p, grantingAccess: true } : p
+        ))
+
+        const result = await grantPortalAccess(patientId)
+
+        if (result.success) {
+            setRefreshKey(k => k + 1)
+        } else {
+            alert(result.message)
+            setPatients(prev => prev.map(p =>
+                p.id === patientId ? { ...p, grantingAccess: false } : p
+            ))
+        }
+    }
 
     return (
         <div className="space-y-6">
@@ -59,17 +92,18 @@ export default function PatientsPage() {
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Nombre</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Email</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Teléfono</th>
+                            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Portal</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {loading ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-8 text-center text-slate-500">Cargando...</td>
+                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Cargando...</td>
                             </tr>
                         ) : patients.length === 0 ? (
                             <tr>
-                                <td colSpan={4} className="px-6 py-8 text-center text-slate-500">No se encontraron pacientes.</td>
+                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No se encontraron pacientes.</td>
                             </tr>
                         ) : (
                             patients.map((patient) => (
@@ -77,6 +111,32 @@ export default function PatientsPage() {
                                     <td className="px-6 py-4 font-medium text-slate-900">{patient.first_name} {patient.last_name}</td>
                                     <td className="px-6 py-4 text-slate-600">{patient.email || '-'}</td>
                                     <td className="px-6 py-4 text-slate-600">{patient.phone || '-'}</td>
+                                    <td className="px-6 py-4">
+                                        {patient.hasPortalAccess ? (
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs font-medium text-green-700 bg-green-50 rounded-full">
+                                                <Key className="w-3 h-3" />
+                                                Acceso activo
+                                            </span>
+                                        ) : patient.email ? (
+                                            <button
+                                                onClick={() => handleGrantAccess(patient.id)}
+                                                disabled={patient.grantingAccess}
+                                                className="inline-flex items-center gap-1 px-3 py-1 text-xs font-medium text-blue-700 bg-blue-50 rounded-md hover:bg-blue-100 disabled:opacity-50"
+                                            >
+                                                {patient.grantingAccess ? 'Otorgando...' : (
+                                                    <>
+                                                        <Key className="w-3 h-3" />
+                                                        Dar Acceso
+                                                    </>
+                                                )}
+                                            </button>
+                                        ) : (
+                                            <span className="inline-flex items-center gap-1 px-2 py-1 text-xs text-slate-500">
+                                                <ShieldOff className="w-3 h-3" />
+                                                Sin email
+                                            </span>
+                                        )}
+                                    </td>
                                     <td className="px-6 py-4">
                                         <Link href={`/dashboard/patients/${patient.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
                                             Ver
