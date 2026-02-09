@@ -52,7 +52,7 @@ export async function getDashboardMetrics() {
         .from('payments')
         .select('amount')
         .eq('clinic_id', clinicId)
-        .eq('status', 'completed')
+        .eq('status', 'paid')
         .gte('created_at', monthStart.toISOString())
         .lte('created_at', monthEnd.toISOString())
 
@@ -60,7 +60,7 @@ export async function getDashboardMetrics() {
         .from('payments')
         .select('amount')
         .eq('clinic_id', clinicId)
-        .eq('status', 'completed')
+        .eq('status', 'paid')
         .gte('created_at', lastMonthStart.toISOString())
         .lte('created_at', lastMonthEnd.toISOString())
 
@@ -142,7 +142,7 @@ export async function getRevenueChartData() {
             .from('payments')
             .select('amount')
             .eq('clinic_id', profile.clinic_id)
-            .eq('status', 'completed')
+            .eq('status', 'paid')
             .gte('created_at', start.toISOString())
             .lte('created_at', end.toISOString())
 

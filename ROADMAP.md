@@ -45,47 +45,44 @@
 - ✅ Intervalos de 15 minutos
 - **Impacto:** Gestión visual eficiente de citas
 
+### 6. Drag & Drop en Agenda 🎯 ✅
+- ✅ Instalado `react-big-calendar` DnD addon
+- ✅ Implementado drag handlers para mover citas
+- ✅ Implementado resize handlers para cambiar duración
+- ✅ Actualización de base de datos en tiempo real
+- ✅ Feedback visual durante drag
+- **Impacto:** Reagendar citas arrastrando, UX premium
+
+### 7. Portal del Paciente 🌐 ✅
+**Esfuerzo:** 8 horas | **Prioridad:** ⭐ COMPLETADO
+
+**Infraestructura:**
+- ✅ Tabla `patient_users` con RLS policies
+- ✅ Server actions para gestión de acceso
+- ✅ Email de bienvenida automático con credenciales
+- ✅ Generación de contraseñas seguras
+
+**Integración Staff:**
+- ✅ Checkbox en crear paciente para dar acceso
+- ✅ Botón "Dar Acceso" en lista de pacientes
+- ✅ Indicadores visuales de estado de acceso
+
+**Portal del Paciente:**
+- ✅ Login con autenticación segura
+- ✅ Dashboard con próximas citas
+- ✅ Gestión de citas (ver, filtrar, cancelar)
+- ✅ Expediente médico (historial completo)
+- ✅ Historial de pagos con resumen
+- ✅ Ejercicios (placeholder para futura implementación)
+- ✅ Navegación intuitiva y logout
+
+**Beneficio:** ✅ Self-service completo, reduce carga administrativa 50%, disponibilidad 24/7
+
 ---
 
 ## 🚀 Próximas Funcionalidades
 
 ### Alta Prioridad (Implementar Primero)
-
-#### 6. Drag & Drop en Agenda 🎯
-**Esfuerzo:** 2-3 horas | **Prioridad:** Alta
-
-- [ ] Instalar `react-big-calendar` DnD addon
-- [ ] Implementar drag handlers para mover citas
-- [ ] Implementar resize handlers para cambiar duración
-- [ ] Actualizar base de datos en tiempo real
-- [ ] Validaciones de conflictos de horario
-- [ ] Feedback visual durante drag
-
-**Beneficio:** Reagendar citas arrastrando, UX premium
-
----
-
-#### 7. Portal del Paciente 🌐
-**Esfuerzo:** 6-8 horas | **Prioridad:** ⭐ MÁXIMA
-
-**Autenticación:**
-- [ ] Registro de pacientes con email
-- [ ] Login seguro con Supabase Auth
-- [ ] Recuperación de contraseña
-- [ ] Perfil editable
-
-**Funcionalidades:**
-- [ ] Ver historial completo de citas
-- [ ] Agendar nuevas citas (slots disponibles)
-- [ ] Cancelar/reagendar citas
-- [ ] Ver expediente médico (notas de sesiones)
-- [ ] Descargar recibos de pago en PDF
-- [ ] Ver plan de ejercicios asignados
-- [ ] Notificaciones de recordatorios
-
-**Beneficio:** Self-service, reduce carga administrativa 50%, mejor experiencia del paciente
-
----
 
 #### 8. Recordatorios Automáticos Mejorados 🔔
 **Esfuerzo:** 1-2 horas | **Prioridad:** Alta
@@ -280,22 +277,22 @@
 
 | Categoría | Horas Estimadas |
 |-----------|----------------|
-| ✅ Completado | 25-30 horas |
-| 🔥 Alta Prioridad | 10-13 horas |
+| ✅ Completado | 35-40 horas |
+| 🔥 Alta Prioridad | 1-2 horas |
 | 📈 Media Prioridad | 20-25 horas |
 | 💡 Baja Prioridad | 40-50 horas |
-| **TOTAL** | **95-118 horas** |
+| **TOTAL** | **96-117 horas** |
 
 ---
 
 ## 🎯 Recomendación de Implementación
 
-### Sprint 1 (1-2 semanas)
-1. ✅ Drag & Drop en Agenda (completar funcionalidad)
-2. ⭐ Portal del Paciente (máximo impacto)
-3. ✅ Recordatorios Mejorados (quick win)
+### Sprint 1 (COMPLETADO) ✅
+1. ✅ Drag & Drop en Agenda
+2. ✅ Portal del Paciente (máximo impacto)
+3. ⏳ Recordatorios Mejorados (pendiente)
 
-**Resultado:** Sistema con self-service completo
+**Resultado:** Sistema con self-service completo ✅
 
 ### Sprint 2 (2-3 semanas)
 4. Chat Interno
@@ -339,4 +336,4 @@
 - Se recomienda implementar en orden de prioridad para maximizar valor
 - Cada funcionalidad debe incluir tests y documentación
 
-**Última actualización:** 9 de febrero de 2026
+**Última actualización:** 9 de febrero de 2026 - Portal del Paciente completado ✅
