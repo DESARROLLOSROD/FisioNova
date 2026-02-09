@@ -11,7 +11,9 @@ import {
     FileText,
     Activity,
     LogOut,
-    Shield
+    Shield,
+    Dumbbell,
+    Copy
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useRouter } from 'next/navigation'
@@ -59,6 +61,18 @@ const routes = [
         icon: FileText,
         href: '/dashboard/finance',
         active: (pathname: string) => pathname.startsWith('/dashboard/finance'),
+    },
+    {
+        label: 'Ejercicios',
+        icon: Dumbbell,
+        href: '/dashboard/exercises',
+        active: (pathname: string) => pathname.startsWith('/dashboard/exercises'),
+    },
+    {
+        label: 'Plantillas',
+        icon: Copy,
+        href: '/dashboard/templates',
+        active: (pathname: string) => pathname.startsWith('/dashboard/templates'),
     },
     {
         label: 'Configuración',
