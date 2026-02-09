@@ -2,13 +2,16 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { Calendar, momentLocalizer, View, SlotInfo } from 'react-big-calendar'
+import withDragAndDrop from 'react-big-calendar/lib/addons/dragAndDrop'
 import moment from 'moment'
 import 'moment/locale/es'
 import 'react-big-calendar/lib/css/react-big-calendar.css'
+import 'react-big-calendar/lib/addons/dragAndDrop/styles.css'
 import './calendar-custom.css'
 
 moment.locale('es')
 const localizer = momentLocalizer(moment)
+const DnDCalendar = withDragAndDrop(Calendar)
 
 interface CalendarEvent {
     id: string
@@ -107,20 +110,23 @@ export default function AdvancedCalendar({
 
     return (
         <div className="h-[calc(100vh-200px)] bg-white rounded-xl border shadow-sm p-4">
-            <Calendar
+            <DnDCalendar
                 localizer={localizer}
                 events={events}
-                startAccessor="start"
-                endAccessor="end"
+                startAccessor={((event: CalendarEvent) => event.start) as any}
+                endAccessor={((event: CalendarEvent) => event.end) as any}
                 view={view}
                 onView={setView}
                 date={date}
                 onNavigate={setDate}
                 onSelectSlot={onSelectSlot}
-                onSelectEvent={onSelectEvent}
-                eventPropGetter={eventStyleGetter}
+                onSelectEvent={onSelectEvent as any}
+                onEventDrop={handleEventDrop}
+                onEventResize={handleEventResize}
+                eventPropGetter={eventStyleGetter as any}
                 messages={messages}
                 selectable
+                resizable
                 popup
                 step={15}
                 timeslots={4}
