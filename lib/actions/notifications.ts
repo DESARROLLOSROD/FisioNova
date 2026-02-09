@@ -66,3 +66,15 @@ export async function sendAppointmentReminder(appointmentId: string) {
 
     return { success: true, results }
 }
+
+export async function testNotificationSetup() {
+    // Test if notification services are configured
+    const twilioConfigured = !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN)
+    const resendConfigured = !!process.env.RESEND_API_KEY
+
+    return {
+        whatsapp: twilioConfigured,
+        email: resendConfigured,
+        configured: twilioConfigured || resendConfigured
+    }
+}
