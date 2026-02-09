@@ -40,35 +40,41 @@ export default async function AdminDashboardPage() {
 
             <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                 {clinics.map((clinic) => (
-                    <div
+                    <Link
                         key={clinic.id}
-                        className="rounded-xl border bg-card text-card-foreground shadow-sm"
+                        href={`/dashboard/admin/clinics/${clinic.id}`}
+                        className="block group"
                     >
-                        <div className="flex flex-col space-y-1.5 p-6">
-                            <div className="flex items-center justify-between">
-                                <h3 className="text-xl font-semibold leading-none tracking-tight">
-                                    {clinic.name}
-                                </h3>
-                                <Building2 className="h-4 w-4 text-muted-foreground" />
+                        <div className="rounded-xl border bg-card text-card-foreground shadow-sm transition-all hover:shadow-md hover:border-blue-200">
+                            <div className="flex flex-col space-y-1.5 p-6">
+                                <div className="flex items-center justify-between">
+                                    <h3 className="text-xl font-semibold leading-none tracking-tight group-hover:text-blue-600 transition-colors">
+                                        {clinic.name}
+                                    </h3>
+                                    <Building2 className="h-4 w-4 text-muted-foreground group-hover:text-blue-600 transition-colors" />
+                                </div>
+                                <p className="text-sm text-muted-foreground">/{clinic.slug}</p>
                             </div>
-                            <p className="text-sm text-muted-foreground">/{clinic.slug}</p>
+                            <div className="p-6 pt-0 space-y-2">
+                                <div className="flex items-center text-sm text-muted-foreground">
+                                    <MapPin className="mr-2 h-4 w-4" />
+                                    {clinic.address || "Sin dirección"}
+                                </div>
+                                <div className="flex items-center text-sm text-muted-foreground">
+                                    <Phone className="mr-2 h-4 w-4" />
+                                    {clinic.phone || "Sin teléfono"}
+                                </div>
+                            </div>
+                            <div className="flex items-center justify-between p-6 pt-0">
+                                <div className="text-xs text-muted-foreground">
+                                    ID: {clinic.id}
+                                </div>
+                                <span className="text-xs font-medium text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                    Gestionar Usuarios →
+                                </span>
+                            </div>
                         </div>
-                        <div className="p-6 pt-0 space-y-2">
-                            <div className="flex items-center text-sm text-muted-foreground">
-                                <MapPin className="mr-2 h-4 w-4" />
-                                {clinic.address || "Sin dirección"}
-                            </div>
-                            <div className="flex items-center text-sm text-muted-foreground">
-                                <Phone className="mr-2 h-4 w-4" />
-                                {clinic.phone || "Sin teléfono"}
-                            </div>
-                        </div>
-                        <div className="flex items-center p-6 pt-0">
-                            <div className="text-xs text-muted-foreground">
-                                ID: {clinic.id}
-                            </div>
-                        </div>
-                    </div>
+                    </Link>
                 ))}
 
                 {clinics.length === 0 && (
