@@ -6,7 +6,8 @@ import { searchPatients } from '@/lib/actions/patients'
 import ServiceModal from '@/components/finance/ServiceModal'
 import PaymentModal from '@/components/finance/PaymentModal'
 import PageHeader from '@/components/ui/PageHeader'
-import { DollarSign, CreditCard, TrendingUp } from 'lucide-react'
+import { generateFinancialReport } from '@/lib/pdf/reports'
+import { DollarSign, CreditCard, TrendingUp, FileDown } from 'lucide-react'
 
 export default function FinancePage() {
     const [activeTab, setActiveTab] = useState<'services' | 'payments' | 'reports'>('services')
@@ -59,8 +60,8 @@ export default function FinancePage() {
                 <button
                     onClick={() => setActiveTab('services')}
                     className={`px-4 py-2 font-medium transition ${activeTab === 'services'
-                            ? 'border-b-2 border-blue-600 text-blue-600'
-                            : 'text-slate-600 hover:text-slate-900'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-slate-600 hover:text-slate-900'
                         }`}
                 >
                     Servicios
@@ -68,8 +69,8 @@ export default function FinancePage() {
                 <button
                     onClick={() => setActiveTab('payments')}
                     className={`px-4 py-2 font-medium transition ${activeTab === 'payments'
-                            ? 'border-b-2 border-blue-600 text-blue-600'
-                            : 'text-slate-600 hover:text-slate-900'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-slate-600 hover:text-slate-900'
                         }`}
                 >
                     Pagos
@@ -77,8 +78,8 @@ export default function FinancePage() {
                 <button
                     onClick={() => setActiveTab('reports')}
                     className={`px-4 py-2 font-medium transition ${activeTab === 'reports'
-                            ? 'border-b-2 border-blue-600 text-blue-600'
-                            : 'text-slate-600 hover:text-slate-900'
+                        ? 'border-b-2 border-blue-600 text-blue-600'
+                        : 'text-slate-600 hover:text-slate-900'
                         }`}
                 >
                     Reportes
@@ -157,40 +158,75 @@ export default function FinancePage() {
 
             {/* Reports Tab */}
             {activeTab === 'reports' && (
-                <div className="grid gap-6 md:grid-cols-3">
-                    <div className="glass-card rounded-xl p-6">
-                        <div className="flex items-center gap-4">
-                            <div className="p-3 bg-green-100/50 rounded-xl">
-                                <DollarSign className="h-6 w-6 text-green-600" />
-                            </div>
-                            <div>
-                                <p className="text-sm font-medium text-slate-500">Total (30 días)</p>
-                                <h3 className="text-2xl font-bold text-slate-900">${report.total.toFixed(2)}</h3>
-                            </div>
-                        </div>
+                <div className="space-y-6">
+                    {/* Export Button */}
+                    <div className="flex justify-end">
+                        <button
+                            onClick={async () => {
+                                const endDate = new Date()
+                                const startDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000)
+
+                                // Get detailed payments for PDF
+                                const detailedPayments = payments.map((p: any) => ({
+                                    date: new Date(p.created_at).toLocaleDateString('es-MX'),
+                                    patient: `${p.patients?.first_name || ''} ${p.patients?.last_name || ''}`,
+                                    service: p.services?.name || 'Sin servicio',
+                                    amount: Number(p.amount),
+                                    method: p.payment_method
+                                }))
+
+                                generateFinancialReport({
+                                    clinicName: 'Clinova',
+                                    startDate: startDate.toLocaleDateString('es-MX'),
+                                    endDate: endDate.toLocaleDateString('es-MX'),
+                                    totalRevenue: report.total,
+                                    paymentsByMethod: report.byMethod,
+                                    paymentsByService: report.byService,
+                                    payments: detailedPayments
+                                })
+                            }}
+                            className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg shadow hover:bg-blue-700 transition"
+                        >
+                            <FileDown className="h-4 w-4" />
+                            Exportar PDF
+                        </button>
                     </div>
 
-                    <div className="glass-card rounded-xl p-6">
-                        <h4 className="font-semibold mb-3">Por Método de Pago</h4>
-                        <div className="space-y-2">
-                            {Object.entries(report.byMethod).map(([method, amount]: [string, any]) => (
-                                <div key={method} className="flex justify-between text-sm">
-                                    <span className="capitalize">{method}</span>
-                                    <span className="font-semibold">${amount.toFixed(2)}</span>
+                    <div className="grid gap-6 md:grid-cols-3">
+                        <div className="glass-card rounded-xl p-6">
+                            <div className="flex items-center gap-4">
+                                <div className="p-3 bg-green-100/50 rounded-xl">
+                                    <DollarSign className="h-6 w-6 text-green-600" />
                                 </div>
-                            ))}
+                                <div>
+                                    <p className="text-sm font-medium text-slate-500">Total (30 días)</p>
+                                    <h3 className="text-2xl font-bold text-slate-900">${report.total.toFixed(2)}</h3>
+                                </div>
+                            </div>
                         </div>
-                    </div>
 
-                    <div className="glass-card rounded-xl p-6">
-                        <h4 className="font-semibold mb-3">Por Servicio</h4>
-                        <div className="space-y-2">
-                            {Object.entries(report.byService).slice(0, 5).map(([service, amount]: [string, any]) => (
-                                <div key={service} className="flex justify-between text-sm">
-                                    <span className="truncate">{service}</span>
-                                    <span className="font-semibold">${amount.toFixed(2)}</span>
-                                </div>
-                            ))}
+                        <div className="glass-card rounded-xl p-6">
+                            <h4 className="font-semibold mb-3">Por Método de Pago</h4>
+                            <div className="space-y-2">
+                                {Object.entries(report.byMethod).map(([method, amount]: [string, any]) => (
+                                    <div key={method} className="flex justify-between text-sm">
+                                        <span className="capitalize">{method}</span>
+                                        <span className="font-semibold">${amount.toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="glass-card rounded-xl p-6">
+                            <h4 className="font-semibold mb-3">Por Servicio</h4>
+                            <div className="space-y-2">
+                                {Object.entries(report.byService).slice(0, 5).map(([service, amount]: [string, any]) => (
+                                    <div key={service} className="flex justify-between text-sm">
+                                        <span className="truncate">{service}</span>
+                                        <span className="font-semibold">${amount.toFixed(2)}</span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
