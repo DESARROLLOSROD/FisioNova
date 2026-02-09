@@ -13,7 +13,7 @@ export async function getDashboardMetrics() {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) return null
 
@@ -127,7 +127,7 @@ export async function getRevenueChartData() {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) return []
 
@@ -167,7 +167,7 @@ export async function getTodayAppointments() {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) return []
 

@@ -47,7 +47,7 @@ export async function getExercises(filters?: {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) return []
 
@@ -95,7 +95,7 @@ export async function createExercise(data: {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) throw new Error('No clinic found')
 

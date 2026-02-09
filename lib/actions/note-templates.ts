@@ -25,7 +25,7 @@ export async function getNoteTemplates(category?: string) {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) return []
 
@@ -60,7 +60,7 @@ export async function createNoteTemplate(data: {
         .from('profiles')
         .select('clinic_id')
         .eq('id', user.id)
-        .single()
+        .maybeSingle()
 
     if (!profile?.clinic_id) throw new Error('No clinic found')
 
