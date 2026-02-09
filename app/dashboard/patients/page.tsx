@@ -6,7 +6,8 @@ import { grantPortalAccess, checkPatientHasAccess } from '@/lib/actions/patient-
 import PatientModal from '@/components/patients/PatientModal'
 import Link from 'next/link'
 import PageHeader from '@/components/ui/PageHeader'
-import { Key, ShieldOff } from 'lucide-react'
+import { Key, ShieldOff, Bell, BellOff } from 'lucide-react'
+import { togglePatientReminders } from '@/lib/actions/reminders'
 
 interface Patient {
     id: string
@@ -14,6 +15,7 @@ interface Patient {
     last_name: string
     email: string | null
     phone: string | null
+    reminders_enabled?: boolean
     hasPortalAccess?: boolean
     grantingAccess?: boolean
 }
@@ -64,6 +66,15 @@ export default function PatientsPage() {
         }
     }
 
+    async function handleToggleReminders(patientId: string, currentValue: boolean) {
+        try {
+            await togglePatientReminders(patientId, !currentValue)
+            setRefreshKey(prev => prev + 1)
+        } catch (error: any) {
+            alert('Error: ' + error.message)
+        }
+    }
+
     return (
         <div className="space-y-6">
             <PageHeader title="Pacientes" description="Gestiona el expediente de tus pacientes.">
@@ -93,17 +104,18 @@ export default function PatientsPage() {
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Email</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Teléfono</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Portal</th>
+                            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Recordatorios</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                         {loading ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">Cargando...</td>
+                                <td colSpan={6} className="px-6 py-8 text-center text-slate-500">Cargando...</td>
                             </tr>
                         ) : patients.length === 0 ? (
                             <tr>
-                                <td colSpan={5} className="px-6 py-8 text-center text-slate-500">No se encontraron pacientes.</td>
+                                <td colSpan={6} className="px-6 py-8 text-center text-slate-500">No se encontraron pacientes.</td>
                             </tr>
                         ) : (
                             patients.map((patient) => (
@@ -136,6 +148,21 @@ export default function PatientsPage() {
                                                 Sin email
                                             </span>
                                         )}
+                                    </td>
+                                    <td className="px-6 py-4">
+                                        <button
+                                            onClick={() => handleToggleReminders(patient.id, patient.reminders_enabled ?? true)}
+                                            className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full transition ${patient.reminders_enabled !== false
+                                                    ? 'text-green-700 bg-green-50 hover:bg-green-100'
+                                                    : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
+                                                }`}
+                                        >
+                                            {patient.reminders_enabled !== false ? (
+                                                <><Bell className="w-3 h-3" /> Activos</>
+                                            ) : (
+                                                <><BellOff className="w-3 h-3" /> Desactivados</>
+                                            )}
+                                        </button>
                                     </td>
                                     <td className="px-6 py-4">
                                         <Link href={`/dashboard/patients/${patient.id}`} className="text-blue-600 hover:text-blue-800 text-sm font-medium">
