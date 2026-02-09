@@ -1,4 +1,5 @@
 import { DashboardSidebar } from '@/components/dashboard/sidebar'
+import GlobalSearch from '@/components/search/GlobalSearch'
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 
@@ -25,6 +26,8 @@ export default async function DashboardLayout({
                     {children}
                 </div>
             </main>
+            {/* Global Search Modal */}
+            <GlobalSearch />
         </div>
     )
 }
