@@ -5,9 +5,14 @@ import CreateClinicUserForm from "@/components/admin/CreateClinicUserForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function ClinicDetailsPage({ params }: { params: { id: string } }) {
-    const clinic = await getClinicById(params.id);
-    const users = await getClinicUsers(params.id);
+export default async function ClinicDetailsPage({ params }: { params: Promise<{ id: string }> }) {
+    const { id } = await params;
+
+    // Debug
+    console.log('ClinicDetailsPage ID:', id);
+
+    const clinic = await getClinicById(id);
+    const users = await getClinicUsers(id);
 
     if ('error' in clinic) {
         return (
@@ -103,8 +108,8 @@ export default async function ClinicDetailsPage({ params }: { params: { id: stri
                                     </div>
                                     <div className="flex items-center gap-4">
                                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${user.role === 'clinic_manager'
-                                                ? 'bg-purple-100 text-purple-700'
-                                                : 'bg-slate-100 text-slate-700'
+                                            ? 'bg-purple-100 text-purple-700'
+                                            : 'bg-slate-100 text-slate-700'
                                             }`}>
                                             {user.role === 'clinic_manager' ? 'Gerente' : user.role}
                                         </span>
