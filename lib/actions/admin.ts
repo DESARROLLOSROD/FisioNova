@@ -158,7 +158,7 @@ export async function getClinicUsers(clinicId: string) {
 
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, phone, role, created_at')
+        .select('id, full_name, phone, role, created_at')
         .eq('clinic_id', clinicId)
         .order('full_name')
 
@@ -262,7 +262,7 @@ export async function createClinicUser(prevState: any, formData: FormData) {
             .insert({
                 id: newUser.user.id,
                 full_name: fullName,
-                email,
+                // email, // Removed as column doesn't exist in profiles
                 phone: phone || null,
                 role: role as any,
                 clinic_id: clinicId
