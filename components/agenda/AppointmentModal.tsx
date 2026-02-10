@@ -25,12 +25,6 @@ export default function AppointmentModal({ isOpen, onClose, refreshCalendar }: A
         setLoading(true)
         const formData = new FormData(e.currentTarget)
 
-        // Convert form data to object for server action
-        // In a real app we would use refined dates, here we assume defaults or ISO strings
-        // For simplicity, let's use the formData directly in the modified server action
-        // or handle it here.
-
-        const title = formData.get('title') as string
         const date = formData.get('date') as string
         const startTime = formData.get('startTime') as string
         const endTime = formData.get('endTime') as string
@@ -40,11 +34,9 @@ export default function AppointmentModal({ isOpen, onClose, refreshCalendar }: A
         const end = new Date(`${date}T${endTime}`)
 
         await createAppointment({
-            title,
             start,
             end,
-            patient_id: patientId, // Use real patient ID
-            doctor_id: undefined  // Will default to current user in server action
+            patient_id: patientId
         })
 
         setLoading(false)
@@ -62,11 +54,6 @@ export default function AppointmentModal({ isOpen, onClose, refreshCalendar }: A
                         <div>
                             <label className="block text-sm font-medium text-slate-700 mb-1">Paciente</label>
                             <PatientCombobox value={patientId} onChange={setPatientId} />
-                        </div>
-
-                        <div>
-                            <label className="block text-sm font-medium text-slate-700">Título / Motivo</label>
-                            <input name="title" required className="mt-1 block w-full rounded-md border-slate-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-slate-50 p-2 border" />
                         </div>
 
                         <div>
