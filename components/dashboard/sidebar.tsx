@@ -29,8 +29,8 @@ const routes = [
     {
         label: 'Agenda',
         icon: Calendar,
-        href: '/dashboard/appointments',
-        active: (pathname: string) => pathname.startsWith('/dashboard/appointments'),
+        href: '/dashboard/agenda',
+        active: (pathname: string) => pathname.startsWith('/dashboard/agenda'),
     },
     {
         label: 'Pacientes',
