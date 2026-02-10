@@ -14,8 +14,7 @@ export async function getAppointments(start: Date, end: Date) {
       start_time,
       end_time,
       status,
-      patient_id,
-      service_id
+      patient_id
     `)
         .gte('start_time', start.toISOString())
         .lte('end_time', end.toISOString())
@@ -59,9 +58,7 @@ export async function createAppointment(data: {
         start_time: data.start.toISOString(),
         end_time: data.end.toISOString(),
         patient_id: data.patient_id || null,
-        service_id: data.service_id || null,
-        clinic_id: profile.clinic_id,
-        status: 'pending'
+        clinic_id: profile.clinic_id
     })
 
     if (error) {
