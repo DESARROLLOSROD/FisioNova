@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { searchPatients } from '@/lib/actions/patients'
-import { grantPortalAccess, checkPatientHasAccess } from '@/lib/actions/patient-portal-access'
+import { grantPortalAccess } from '@/lib/actions/patient-portal-access'
 import PatientModal from '@/components/patients/PatientModal'
 import Link from 'next/link'
 import PageHeader from '@/components/ui/PageHeader'
@@ -16,8 +16,9 @@ interface Patient {
     email: string | null
     phone: string | null
     reminders_enabled?: boolean
-    hasPortalAccess?: boolean
-    grantingAccess?: boolean
+    hasPortalAccess?: boolean; // Derivado en el cliente
+    grantingAccess?: boolean;
+    patient_users?: { is_active: boolean }[]; // Relación de Supabase
 }
 
 export default function PatientsPage() {
@@ -32,16 +33,11 @@ export default function PatientsPage() {
             setLoading(true)
             const data = await searchPatients(search)
 
-            // Check portal access for each patient
-            const patientsWithAccess = await Promise.all(
-                (data as Patient[]).map(async (patient) => {
-                    const accessInfo = await checkPatientHasAccess(patient.id)
-                    return {
-                        ...patient,
-                        hasPortalAccess: accessInfo.hasAccess
-                    }
-                })
-            )
+            // Map data to include hasPortalAccess
+            const patientsWithAccess = (data as any[]).map((patient) => ({
+                ...patient,
+                hasPortalAccess: patient.patient_users?.[0]?.is_active ?? false
+            }))
 
             setPatients(patientsWithAccess)
             setLoading(false)
@@ -153,8 +149,8 @@ export default function PatientsPage() {
                                         <button
                                             onClick={() => handleToggleReminders(patient.id, patient.reminders_enabled ?? true)}
                                             className={`inline-flex items-center gap-1 px-2 py-1 text-xs rounded-full transition ${patient.reminders_enabled !== false
-                                                    ? 'text-green-700 bg-green-50 hover:bg-green-100'
-                                                    : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
+                                                ? 'text-green-700 bg-green-50 hover:bg-green-100'
+                                                : 'text-slate-500 bg-slate-100 hover:bg-slate-200'
                                                 }`}
                                         >
                                             {patient.reminders_enabled !== false ? (
