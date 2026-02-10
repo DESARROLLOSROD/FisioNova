@@ -34,6 +34,10 @@ export default async function ConfirmAppointmentPage({ params }: { params: { tok
     const { data } = result
     const date = new Date(data.start_time)
 
+    // Handle potential array response from Supabase joins
+    const patient = Array.isArray(data.patients) ? data.patients[0] : data.patients
+    const clinic = Array.isArray(data.clinics) ? data.clinics[0] : data.clinics
+
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4">
             <div className="bg-white p-8 rounded-2xl shadow-sm border border-slate-200 max-w-md w-full text-center space-y-6">
@@ -46,7 +50,7 @@ export default async function ConfirmAppointmentPage({ params }: { params: { tok
                         {result.alreadyConfirmed ? 'Cita ya confirmada' : '¡Cita Confirmada!'}
                     </h1>
                     <p className="text-slate-500 mt-2">
-                        Gracias <strong>{data.patients?.first_name}</strong>, te esperamos.
+                        Gracias <strong>{patient?.first_name}</strong>, te esperamos.
                     </p>
                 </div>
 
@@ -66,7 +70,7 @@ export default async function ConfirmAppointmentPage({ params }: { params: { tok
                     <div className="flex items-center text-slate-700">
                         <MapPin className="w-5 h-5 mr-3 text-blue-500" />
                         <span className="font-medium">
-                            {data.clinics?.name || 'Clínica'}
+                            {clinic?.name || 'Clínica'}
                         </span>
                     </div>
                 </div>
