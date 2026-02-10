@@ -67,6 +67,71 @@ export async function sendAppointmentReminder(appointmentId: string) {
     return { success: true, results }
 }
 
+export async function resendAppointmentConfirmation(appointmentId: string) {
+    const supabase = await createClient()
+
+    // Fetch appointment with patient and clinic details
+    const { data: appointment, error } = await supabase
+        .from('appointments')
+        .select(`
+            *,
+            patients (
+                first_name,
+                last_name,
+                email,
+                phone
+            ),
+            clinics (
+                name
+            ),
+            services (
+                name
+            )
+        `)
+        .eq('id', appointmentId)
+        .single()
+
+    if (error || !appointment) {
+        console.error('Error fetching appointment:', error)
+        return { success: false, error: 'Cita no encontrada' }
+    }
+
+    const patient = appointment.patients
+    if (!patient) return { success: false, error: 'Paciente no encontrado' }
+
+    const clinicName = appointment.clinics?.name || 'Clínica'
+    const serviceName = appointment.services?.name || 'Consulta'
+    const dateStr = format(new Date(appointment.start_time), "EEEE d 'de' MMMM 'a las' HH:mm", { locale: es })
+
+    const messageBody = `Hola ${patient.first_name}, confirmamos tu cita de ${serviceName} en ${clinicName} el ${dateStr}. ¡Te esperamos!`
+
+    const results = {
+        whatsapp: null as any,
+        email: null as any
+    }
+
+    // Send WhatsApp if phone exists
+    if (patient.phone) {
+        results.whatsapp = await sendWhatsAppMessage(patient.phone, messageBody)
+    }
+
+    // Send Email if email exists
+    if (patient.email) {
+        const html = `
+            <h1>Confirmación de Cita</h1>
+            <p><strong>Paciente:</strong> ${patient.first_name} ${patient.last_name}</p>
+            <p><strong>Servicio:</strong> ${serviceName}</p>
+            <p><strong>Fecha y Hora:</strong> ${dateStr}</p>
+            <p><strong>Clínica:</strong> ${clinicName}</p>
+            <hr>
+            <p>Si necesitas reprogramar o cancelar, contáctanos.</p>
+        `
+        results.email = await sendEmail(patient.email, `Confirmación de Cita - ${clinicName}`, html)
+    }
+
+    return { success: true, results }
+}
+
 export async function testNotificationSetup() {
     // Test if notification services are configured
     const twilioConfigured = !!(process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN)

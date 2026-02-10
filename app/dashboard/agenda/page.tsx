@@ -7,7 +7,8 @@ import RecurringAppointmentModal from '@/components/calendar/RecurringAppointmen
 import { getAppointmentsForCalendar, updateAppointmentTime, createQuickAppointment, getPatientsForCalendar, getServicesForCalendar } from '@/lib/actions/appointments-calendar'
 import { getAvailabilityBlocks, checkTimeSlotAvailability } from '@/lib/actions/availability'
 import { SlotInfo } from 'react-big-calendar'
-import { X, Plus, Calendar as CalendarIcon, User, Clock, Ban, Repeat } from 'lucide-react'
+import { X, Plus, Calendar as CalendarIcon, User, Clock, Ban, Repeat, Send } from 'lucide-react'
+import { resendAppointmentConfirmation } from '@/lib/actions/notifications'
 
 interface CalendarEvent {
     id: string
@@ -132,6 +133,25 @@ export default function AgendaPage() {
         setFormData({ patientId: '', serviceId: '', notes: '' })
         setIsModalOpen(true)
     }, [])
+
+    const handleResendConfirmation = async () => {
+        if (!selectedEvent?.id) return
+
+        const confirmed = confirm('¿Enviar confirmación de cita por WhatsApp y Email?')
+        if (!confirmed) return
+
+        try {
+            const result = await resendAppointmentConfirmation(selectedEvent.id)
+            if (result.success) {
+                alert('✅ Confirmación enviada exitosamente')
+            } else {
+                alert(`❌ Error: ${result.error}`)
+            }
+        } catch (error) {
+            console.error('Error resending confirmation:', error)
+            alert('❌ Error al enviar confirmación')
+        }
+    }
 
     // Handle event selection (view/edit appointment)
     const handleSelectEvent = useCallback((event: CalendarEvent) => {
@@ -263,6 +283,20 @@ export default function AgendaPage() {
                                 <div>
                                     <p className="text-sm text-gray-500">Estado</p>
                                     <p className="font-medium capitalize">{selectedEvent.resource?.status}</p>
+                                </div>
+
+                                {/* Resend Confirmation Button */}
+                                <div className="pt-4 border-t">
+                                    <button
+                                        onClick={handleResendConfirmation}
+                                        className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition flex items-center justify-center gap-2"
+                                    >
+                                        <Send className="h-4 w-4" />
+                                        Reenviar Confirmación
+                                    </button>
+                                    <p className="text-xs text-gray-500 mt-2 text-center">
+                                        Envía WhatsApp y Email al paciente
+                                    </p>
                                 </div>
                             </div>
                         ) : (
