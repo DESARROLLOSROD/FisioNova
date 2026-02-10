@@ -2,6 +2,16 @@
 
 import { Resend } from 'resend'
 
+
+interface WelcomeEmailData {
+    to: string
+    patientName: string
+    clinicName: string
+    email: string
+    tempPassword: string
+    portalUrl: string
+}
+
 export async function sendPatientWelcomeEmail(data: WelcomeEmailData) {
     const resend = new Resend(process.env.RESEND_API_KEY)
     try {
