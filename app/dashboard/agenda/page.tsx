@@ -2,9 +2,12 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import AdvancedCalendar from '@/components/calendar/AdvancedCalendar'
+import AvailabilityBlockModal from '@/components/calendar/AvailabilityBlockModal'
+import RecurringAppointmentModal from '@/components/calendar/RecurringAppointmentModal'
 import { getAppointmentsForCalendar, updateAppointmentTime, createQuickAppointment, getPatientsForCalendar, getServicesForCalendar } from '@/lib/actions/appointments-calendar'
+import { getAvailabilityBlocks, checkTimeSlotAvailability } from '@/lib/actions/availability'
 import { SlotInfo } from 'react-big-calendar'
-import { X, Plus, Calendar as CalendarIcon, User, Clock } from 'lucide-react'
+import { X, Plus, Calendar as CalendarIcon, User, Clock, Ban, Repeat } from 'lucide-react'
 
 interface CalendarEvent {
     id: string
@@ -17,12 +20,15 @@ interface CalendarEvent {
         serviceId: string
         serviceName: string
         status: string
+        isBlock?: boolean
     }
 }
 
 export default function AgendaPage() {
     const [events, setEvents] = useState<CalendarEvent[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
+    const [isBlockModalOpen, setIsBlockModalOpen] = useState(false)
+    const [isRecurringModalOpen, setIsRecurringModalOpen] = useState(false)
     const [selectedSlot, setSelectedSlot] = useState<SlotInfo | null>(null)
     const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
     const [patients, setPatients] = useState<any[]>([])
@@ -42,13 +48,36 @@ export default function AgendaPage() {
     }, [])
 
     const loadData = async () => {
-        const [appointmentsData, patientsData, servicesData] = await Promise.all([
+        // Get date range for current view (1 month)
+        const now = new Date()
+        const startDate = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+        const endDate = new Date(now.getFullYear(), now.getMonth() + 2, 0)
+
+        const [appointmentsData, patientsData, servicesData, blocksData] = await Promise.all([
             getAppointmentsForCalendar(),
             getPatientsForCalendar(),
-            getServicesForCalendar()
+            getServicesForCalendar(),
+            getAvailabilityBlocks(startDate, endDate)
         ])
 
-        setEvents(appointmentsData)
+        // Convert blocks to calendar events
+        const blockEvents = blocksData.map((block: any) => ({
+            id: `block-${block.id}`,
+            title: `🚫 ${block.reason || 'Bloqueado'}`,
+            start: new Date(block.start_time),
+            end: new Date(block.end_time),
+            resource: {
+                patientId: '',
+                patientName: '',
+                serviceId: '',
+                serviceName: '',
+                status: 'blocked',
+                isBlock: true,
+                blockId: block.id
+            }
+        }))
+
+        setEvents([...appointmentsData, ...blockEvents])
         setPatients(patientsData)
         setServices(servicesData)
     }
@@ -82,7 +111,15 @@ export default function AgendaPage() {
     }, [])
 
     // Handle slot selection (create new appointment)
-    const handleSelectSlot = useCallback((slotInfo: SlotInfo) => {
+    const handleSelectSlot = useCallback(async (slotInfo: SlotInfo) => {
+        // Check if slot is available
+        const availability = await checkTimeSlotAvailability(slotInfo.start, slotInfo.end)
+
+        if (!availability.available) {
+            alert(`Este horario está bloqueado: ${availability.conflictingBlock?.reason || 'No disponible'}`)
+            return
+        }
+
         setSelectedSlot(slotInfo)
         setSelectedEvent(null)
         setFormData({ patientId: '', serviceId: '', notes: '' })
@@ -134,6 +171,22 @@ export default function AgendaPage() {
                     <p className="text-muted-foreground">
                         Gestiona las citas de tu clínica
                     </p>
+                </div>
+                <div className="flex gap-2">
+                    <button
+                        onClick={() => setIsRecurringModalOpen(true)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition flex items-center gap-2"
+                    >
+                        <Repeat className="h-4 w-4" />
+                        Citas Recurrentes
+                    </button>
+                    <button
+                        onClick={() => setIsBlockModalOpen(true)}
+                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+                    >
+                        <Ban className="h-4 w-4" />
+                        Bloquear Horario
+                    </button>
                 </div>
             </div>
 
@@ -288,6 +341,22 @@ export default function AgendaPage() {
                     </div>
                 </div>
             )}
+
+            {/* Availability Block Modal */}
+            <AvailabilityBlockModal
+                isOpen={isBlockModalOpen}
+                onClose={() => setIsBlockModalOpen(false)}
+                onSuccess={loadData}
+            />
+
+            {/* Recurring Appointment Modal */}
+            <RecurringAppointmentModal
+                isOpen={isRecurringModalOpen}
+                onClose={() => setIsRecurringModalOpen(false)}
+                onSuccess={loadData}
+                patients={patients}
+                services={services}
+            />
         </div>
     )
 }

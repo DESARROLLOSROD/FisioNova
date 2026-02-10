@@ -25,6 +25,8 @@ interface CalendarEvent {
         serviceName: string
         status: string
         physiotherapistId?: string
+        isBlock?: boolean
+        blockId?: string
     }
 }
 
@@ -43,14 +45,48 @@ export default function AdvancedCalendar({
     onSelectSlot,
     onSelectEvent
 }: AdvancedCalendarProps) {
-    const [view, setView] = useState<View>('week')
+    const [view, setView] = useState<View>(() => {
+        // Load saved view from localStorage, default to 'week'
+        if (typeof window !== 'undefined') {
+            const savedView = localStorage.getItem('calendar-view')
+            return (savedView as View) || 'week'
+        }
+        return 'week'
+    })
     const [date, setDate] = useState(new Date())
+
+    // Save view to localStorage whenever it changes
+    const handleViewChange = useCallback((newView: View) => {
+        setView(newView)
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('calendar-view', newView)
+        }
+    }, [])
 
     // Event style getter for color coding
     const eventStyleGetter = useCallback((event: CalendarEvent) => {
         const status = event.resource?.status || 'pending'
+        const isBlock = event.resource?.isBlock
 
         let backgroundColor = '#3b82f6' // Default blue
+
+        if (isBlock) {
+            // Blocked slots are gray with stripes
+            return {
+                style: {
+                    backgroundColor: '#9ca3af',
+                    backgroundImage: 'repeating-linear-gradient(45deg, transparent, transparent 10px, rgba(255,255,255,.1) 10px, rgba(255,255,255,.1) 20px)',
+                    borderRadius: '6px',
+                    opacity: 0.8,
+                    color: 'white',
+                    border: '2px dashed #6b7280',
+                    display: 'block',
+                    fontSize: '13px',
+                    fontWeight: '600',
+                    cursor: 'not-allowed'
+                }
+            }
+        }
 
         switch (status) {
             case 'confirmed':
@@ -83,11 +119,19 @@ export default function AdvancedCalendar({
 
     // Handle event drop (drag & drop)
     const handleEventDrop = useCallback(async ({ event, start, end }: any) => {
+        // Prevent moving blocked slots
+        if (event.resource?.isBlock) {
+            return
+        }
         await onEventDrop(event.id, start, end)
     }, [onEventDrop])
 
     // Handle event resize
     const handleEventResize = useCallback(async ({ event, start, end }: any) => {
+        // Prevent resizing blocked slots
+        if (event.resource?.isBlock) {
+            return
+        }
         await onEventResize(event.id, start, end)
     }, [onEventResize])
 
@@ -116,7 +160,7 @@ export default function AdvancedCalendar({
                 startAccessor={((event: CalendarEvent) => event.start) as any}
                 endAccessor={((event: CalendarEvent) => event.end) as any}
                 view={view}
-                onView={setView}
+                onView={handleViewChange}
                 date={date}
                 onNavigate={setDate}
                 onSelectSlot={onSelectSlot}
@@ -134,6 +178,9 @@ export default function AdvancedCalendar({
                 views={['month', 'week', 'day']}
                 min={new Date(2024, 0, 1, 7, 0, 0)} // 7 AM
                 max={new Date(2024, 0, 1, 21, 0, 0)} // 9 PM
+                scrollToTime={new Date()} // Auto-scroll to current time
+                showMultiDayTimes
+                getNow={() => new Date()} // Enable current time indicator
                 formats={{
                     dayFormat: 'ddd DD',
                     weekdayFormat: 'dddd',

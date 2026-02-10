@@ -70,6 +70,34 @@
 .rbc-current-time-indicator {
     background-color: #ef4444;
     height: 2px;
+    position: relative;
+    z-index: 10;
+}
+
+.rbc-current-time-indicator::before {
+    content: '';
+    position: absolute;
+    left: -6px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    background-color: #ef4444;
+    border-radius: 50%;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+
+    0%,
+    100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.7;
+        transform: scale(1.2);
+    }
 }
 
 .rbc-month-view {
