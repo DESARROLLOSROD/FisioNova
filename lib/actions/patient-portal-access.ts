@@ -167,11 +167,13 @@ export async function checkPatientHasAccess(patientId: string) {
         .select('id, is_active, granted_at, first_login_at')
         .eq('patient_id', patientId)
         .eq('is_active', true)
-        .single()
+        .limit(1)
+
+    const accessData = data && data.length > 0 ? data[0] : null
 
     return {
-        hasAccess: !!data,
-        grantedAt: data?.granted_at,
-        hasLoggedIn: !!data?.first_login_at
+        hasAccess: !!accessData,
+        grantedAt: accessData?.granted_at,
+        hasLoggedIn: !!accessData?.first_login_at
     }
 }
