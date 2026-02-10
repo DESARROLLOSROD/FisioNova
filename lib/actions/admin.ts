@@ -200,10 +200,7 @@ export async function createClinicUser(prevState: any, formData: FormData) {
     console.log('clinicId:', clinicId)
     console.log('------------------------------')
 
-    console.log('--- createClinicUser Debug ---')
-    console.log('Received formData:', Object.fromEntries(formData))
-    console.log('clinicId:', clinicId)
-    console.log('------------------------------')
+
 
     if (!email || !password || !fullName || !clinicId) {
         return { message: 'Faltan campos requeridos' }
@@ -243,9 +240,8 @@ export async function createClinicUser(prevState: any, formData: FormData) {
     }
 
     // 5. Update/Create Profile
-    // 5. Update/Create Profile
     // Try update first assuming trigger ran
-    const { error: updateError, count } = await supabaseAdmin
+    const { data: updatedUsers, error: updateError } = await supabaseAdmin
         .from('profiles')
         .update({
             full_name: fullName,
@@ -254,10 +250,10 @@ export async function createClinicUser(prevState: any, formData: FormData) {
             clinic_id: clinicId
         })
         .eq('id', newUser.user.id)
-        .select('', { count: 'exact', head: true })
+        .select('id')
 
     // Fallback Insert if profile doesn't exist (trigger fail or count is 0)
-    if (updateError || count === 0) {
+    if (updateError || !updatedUsers || updatedUsers.length === 0) {
         console.log('Profile update failed or no rows matched. Attempting insert.')
 
         // Try insert
@@ -278,25 +274,8 @@ export async function createClinicUser(prevState: any, formData: FormData) {
             return { message: 'Usuario creado pero falló perfil: ' + insertError.message }
         }
     }
-    // Try insert
-    const { error: insertError } = await supabaseAdmin
-        .from('profiles')
-        .insert({
-            id: newUser.user.id,
-            full_name: fullName,
-            // email, // Removed as column doesn't exist in profiles
-            phone: phone || null,
-            role: role as any,
-            clinic_id: clinicId
-        })
 
-    if (insertError) {
-        // Rollback auth
-        await supabaseAdmin.auth.admin.deleteUser(newUser.user.id)
-        return { message: 'Usuario creado pero falló perfil: ' + insertError.message }
-    }
-}
 
-revalidatePath(`/dashboard/admin/clinics/${clinicId}`)
-return { message: 'Usuario creado exitosamente', success: true }
+    revalidatePath(`/dashboard/admin/clinics/${clinicId}`)
+    return { message: 'Usuario creado exitosamente', success: true }
 }
