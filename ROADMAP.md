@@ -35,15 +35,20 @@
 - ✅ Desglose por método de pago y servicio
 - **Impacto:** Profesionalismo, transparencia financiera
 
-### 5. Agenda Avanzada 📅
+### 5. Agenda Avanzada 📅 ✅
 - ✅ Calendario con react-big-calendar
-- ✅ Multi-view: Día, Semana, Mes
+- ✅ Multi-view: Día, Semana, Mes con persistencia
 - ✅ Color coding por estado de cita
 - ✅ Creación rápida de citas con modal
 - ✅ Localización en español
 - ✅ Horario configurable (7 AM - 9 PM)
 - ✅ Intervalos de 15 minutos
-- **Impacto:** Gestión visual eficiente de citas
+- ✅ Indicador de hora actual con animación
+- ✅ Auto-scroll a hora actual
+- ✅ Sistema de bloqueo de horarios
+- ✅ Citas recurrentes (diarias/semanales/mensuales)
+- ✅ Botón de reenvío de confirmaciones
+- **Impacto:** Gestión visual eficiente + bloqueos + recurrencia
 
 ### 6. Drag & Drop en Agenda 🎯 ✅
 - ✅ Instalado `react-big-calendar` DnD addon
@@ -93,8 +98,21 @@
 - ✅ Logging de envíos con tracking completo
 - ✅ Recordatorios múltiples (48h, 24h, 2h antes)
 - ✅ Opción de desactivar por paciente
+- ✅ Botón de reenvío manual desde detalles de cita
 
 **Beneficio:** ✅ Mayor personalización, mejor tasa de confirmación, tracking completo
+
+---
+
+### 9. Drag-to-Block en Agenda 🎯
+**Esfuerzo:** 1-2 horas | **Prioridad:** Alta | **Fecha planeada:** 11 Feb 2026
+
+- [ ] Habilitar selección por arrastre en calendario
+- [ ] Modal simplificado con horas pre-llenadas
+- [ ] Solo pedir razón del bloqueo
+- [ ] Opcional: Toggle "Modo Bloqueo"
+
+**Beneficio:** Crear bloqueos múltiples rápidamente (lunch, juntas, etc.)
 
 ---
 
@@ -336,4 +354,4 @@
 - Se recomienda implementar en orden de prioridad para maximizar valor
 - Cada funcionalidad debe incluir tests y documentación
 
-**Última actualización:** 9 de febrero de 2026 - Portal del Paciente completado ✅
+**Última actualización:** 10 de febrero de 2026 - Calendario mejorado con bloqueos, recurrentes y reenvío ✅
