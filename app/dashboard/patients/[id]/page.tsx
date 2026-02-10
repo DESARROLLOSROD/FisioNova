@@ -3,7 +3,8 @@ import { getMedicalRecords } from '@/lib/actions/medical-records'
 import NewConsultationForm from '@/components/emr/NewConsultationForm'
 import RecordList from '@/components/emr/RecordList'
 import { notFound } from 'next/navigation'
-import { User, Phone, Mail, Calendar, MapPin } from 'lucide-react'
+import Link from 'next/link'
+import { User, Phone, Mail, Calendar, MapPin, Activity } from 'lucide-react'
 import { format } from 'date-fns'
 import { es } from 'date-fns/locale'
 
@@ -47,6 +48,13 @@ export default async function PatientDetailsPage({ params }: { params: Promise<{
                         </div>
                     </div>
                     <div className="flex gap-2">
+                        <Link
+                            href={`/dashboard/patients/${id}/evolution`}
+                            className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition text-sm font-medium shadow-sm flex items-center gap-2"
+                        >
+                            <Activity className="w-4 h-4" />
+                            Evolución
+                        </Link>
                         <button className="px-4 py-2 bg-white border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition text-sm font-medium shadow-sm">
                             Editar Perfil
                         </button>

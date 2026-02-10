@@ -19,6 +19,8 @@ export const metadata: Metadata = {
   manifest: "/manifest.webmanifest",
 };
 
+import { Toaster } from "sonner";
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -31,6 +33,7 @@ export default function RootLayout({
       >
         <ServiceWorkerRegister />
         {children}
+        <Toaster position="top-right" richColors />
       </body>
     </html>
   );
