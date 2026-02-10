@@ -7,8 +7,13 @@ import Link from 'next/link'
 import { ArrowLeft } from 'lucide-react'
 
 export default async function EvolutionPage({ params }: { params: { id: string } }) {
-    const patient = await getPatientById(params.id)
-    const history = await getPatientMeasurements(params.id)
+    const resolvedParams = await params
+    console.log('Evolution page - Patient ID:', resolvedParams.id)
+
+    const patient = await getPatientById(resolvedParams.id)
+    console.log('Evolution page - Patient data:', patient)
+
+    const history = await getPatientMeasurements(resolvedParams.id)
 
     if (!patient) {
         return <div>Paciente no encontrado</div>
@@ -18,7 +23,7 @@ export default async function EvolutionPage({ params }: { params: { id: string }
         <div className="space-y-6">
             <div className="flex items-center gap-4 mb-6">
                 <Link
-                    href={`/dashboard/patients/${params.id}`}
+                    href={`/dashboard/patients/${resolvedParams.id}`}
                     className="p-2 hover:bg-slate-100 rounded-full transition text-slate-500"
                 >
                     <ArrowLeft className="w-5 h-5" />
