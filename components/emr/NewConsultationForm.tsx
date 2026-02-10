@@ -16,7 +16,8 @@ export default function NewConsultationForm({ patientId, onSuccess }: NewConsult
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault()
         setLoading(true)
-        const formData = new FormData(e.currentTarget)
+        const form = e.currentTarget
+        const formData = new FormData(form)
 
         try {
             await createMedicalRecord({
@@ -27,7 +28,7 @@ export default function NewConsultationForm({ patientId, onSuccess }: NewConsult
             })
 
             // Reset form
-            e.currentTarget.reset()
+            form.reset()
             router.refresh()
             if (onSuccess) onSuccess()
         } catch (error) {
