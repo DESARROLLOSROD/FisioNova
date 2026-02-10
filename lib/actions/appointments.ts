@@ -89,3 +89,46 @@ export async function updateAppointment(id: string, data: {
         throw new Error('Failed to update appointment')
     }
 }
+
+export async function confirmAppointment(token: string) {
+    const supabase = await createClient()
+
+    // 1. Find appointment by token
+    const { data: appointment, error: fetchError } = await supabase
+        .from('appointments')
+        .select(`
+            id, 
+            start_time, 
+            status,
+            patients (first_name, last_name),
+            clinics (name)
+        `)
+        .eq('confirmation_token', token)
+        .single()
+
+    if (fetchError || !appointment) {
+        console.error('Error finding appointment:', fetchError)
+        return { success: false, message: 'Cita no encontrada o enlace inválido.' }
+    }
+
+    if (appointment.status === 'confirmed') {
+        return {
+            success: true,
+            alreadyConfirmed: true,
+            data: appointment
+        }
+    }
+
+    // 2. Update status to confirmed
+    const { error: updateError } = await supabase
+        .from('appointments')
+        .update({ status: 'confirmed' })
+        .eq('id', appointment.id)
+
+    if (updateError) {
+        console.error('Error confirming appointment:', updateError)
+        return { success: false, message: 'Error al confirmar la cita.' }
+    }
+
+    return { success: true, data: appointment }
+}

@@ -29,6 +29,7 @@ interface AppointmentNotification {
     clinicName: string
     appointmentDate: Date
     serviceName: string
+    confirmationToken?: string
 }
 
 export async function sendAppointmentReminder(data: AppointmentNotification) {
@@ -55,7 +56,15 @@ export async function sendAppointmentReminder(data: AppointmentNotification) {
         try {
             const client = getTwilioClient()
             if (client && process.env.TWILIO_WHATSAPP_FROM) {
-                const message = `Hola ${data.patientName}! 👋\n\nTe recordamos tu cita en ${data.clinicName}:\n\n📅 ${dateStr}\n⏰ ${timeStr}\n🏥 ${data.serviceName}\n\nNos vemos pronto!`
+                let message = `Hola ${data.patientName}! 👋\n\nTe recordamos tu cita en ${data.clinicName}:\n\n📅 ${dateStr}\n⏰ ${timeStr}\n🏥 ${data.serviceName}`
+
+                if (data.confirmationToken) {
+                    // Use standard link instead of button
+                    const confirmLink = `https://clinova-v2.up.railway.app/citas/confirmar/${data.confirmationToken}`
+                    message += `\n\nCONFIRMA TU ASISTENCIA AQUÍ:\n${confirmLink}`
+                }
+
+                message += `\n\nNos vemos pronto!`
 
                 await client.messages.create({
                     from: `whatsapp:${process.env.TWILIO_WHATSAPP_FROM}`,

@@ -70,6 +70,7 @@ export async function GET(request: Request) {
                     .select(`
                         id,
                         start_time,
+                        confirmation_token,
                         patients!inner (
                             id,
                             first_name,
@@ -131,7 +132,13 @@ export async function GET(request: Request) {
                     // Send WhatsApp
                     if (settings.whatsapp_enabled && patient.phone && whatsappTemplate) {
                         try {
-                            const message = replaceVariables(whatsappTemplate.message, variables)
+                            let message = replaceVariables(whatsappTemplate.message, variables)
+
+                            // Append confirmation link if token exists
+                            if (apt.confirmation_token) {
+                                message += `\n\nCONFIRMA TU ASISTENCIA AQUÍ:\nhttps://clinova-v2.up.railway.app/citas/confirmar/${apt.confirmation_token}`
+                            }
+
                             await sendWhatsAppMessage(patient.phone, message)
 
                             await logReminder(supabase, {
