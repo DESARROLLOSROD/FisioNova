@@ -47,13 +47,17 @@ export async function searchPatients(query: string) {
     // const cookieStore = await cookies()
     const supabase = await createClient()
 
-    if (!query) return []
-
-    const { data, error } = await supabase
+    let queryBuilder = supabase
         .from('patients')
-        .select('id, first_name, last_name, email, phone, patient_users(is_active)')
-        .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
-        .limit(10)
+        .select('id, first_name, last_name, email, phone, created_at, patient_users(is_active)')
+
+    if (query) {
+        queryBuilder = queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
+    } else {
+        queryBuilder = queryBuilder.order('created_at', { ascending: false }).limit(20)
+    }
+
+    const { data, error } = await queryBuilder
 
     if (error) {
         console.error('Error searching patients:', error)
