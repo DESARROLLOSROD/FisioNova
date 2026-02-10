@@ -57,6 +57,7 @@ export default function CreateClinicUserForm({ clinicId, createAction }: { clini
             )}
 
             <input type="hidden" name="clinic_id" value={clinicId} />
+            <div className="text-xs text-gray-400">Debug Clinic ID: {clinicId || 'UNDEFINED'}</div>
 
             <div>
                 <label className="block text-sm font-medium text-gray-700">Nombre Completo</label>

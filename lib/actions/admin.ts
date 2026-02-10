@@ -195,6 +195,16 @@ export async function createClinicUser(prevState: any, formData: FormData) {
     const clinicId = formData.get('clinic_id') as string
     const role = formData.get('role') as string || 'clinic_manager'
 
+    console.log('--- createClinicUser Debug ---')
+    console.log('Received formData:', Object.fromEntries(formData))
+    console.log('clinicId:', clinicId)
+    console.log('------------------------------')
+
+    console.log('--- createClinicUser Debug ---')
+    console.log('Received formData:', Object.fromEntries(formData))
+    console.log('clinicId:', clinicId)
+    console.log('------------------------------')
+
     if (!email || !password || !fullName || !clinicId) {
         return { message: 'Faltan campos requeridos' }
     }
