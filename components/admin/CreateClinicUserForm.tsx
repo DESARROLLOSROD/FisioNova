@@ -31,8 +31,6 @@ export default function CreateClinicUserForm({ clinicId, createAction }: { clini
     async function clientAction(formData: FormData) {
         setMessage(null)
         // Add clinicId to formData
-        formData.append('clinic_id', clinicId)
-
         const result = await createAction(null, formData)
 
         if (result.message) {
@@ -57,6 +55,8 @@ export default function CreateClinicUserForm({ clinicId, createAction }: { clini
                     {message.text}
                 </div>
             )}
+
+            <input type="hidden" name="clinic_id" value={clinicId} />
 
             <div>
                 <label className="block text-sm font-medium text-gray-700">Nombre Completo</label>
