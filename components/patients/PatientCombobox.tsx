@@ -23,21 +23,19 @@ export default function PatientCombobox({ value, onChange }: PatientComboboxProp
     const [loading, setLoading] = useState(false)
     const wrapperRef = useRef<HTMLDivElement>(null)
 
-    // Fetch patients on query change
+    // Fetch patients on query change or when dropdown opens
     useEffect(() => {
         const timer = setTimeout(async () => {
-            if (query.length < 2) {
-                setPatients([])
-                return
-            }
             setLoading(true)
+            // If query is empty, search with empty string to get all patients
+            // Otherwise search with the query
             const data = await searchPatients(query)
             setPatients(data)
             setLoading(false)
-        }, 300)
+        }, query ? 300 : 0) // No delay when opening, 300ms delay when typing
 
         return () => clearTimeout(timer)
-    }, [query])
+    }, [query, open]) // Re-fetch when dropdown opens
 
     // Close on outside click
     useEffect(() => {
