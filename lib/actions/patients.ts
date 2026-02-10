@@ -51,7 +51,7 @@ export async function searchPatients(query: string) {
 
     const { data, error } = await supabase
         .from('patients')
-        .select('id, first_name, last_name, email, phone')
+        .select('id, first_name, last_name, email, phone, patient_users(is_active)')
         .or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
         .limit(10)
 
