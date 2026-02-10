@@ -11,12 +11,11 @@ export async function getAppointments(start: Date, end: Date) {
         .from('appointments')
         .select(`
       id,
-      title,
       start_time,
       end_time,
       status,
       patient_id,
-      doctor_id
+      service_id
     `)
         .gte('start_time', start.toISOString())
         .lte('end_time', end.toISOString())
@@ -28,35 +27,41 @@ export async function getAppointments(start: Date, end: Date) {
 
     return data.map((apt: any) => ({
         id: apt.id,
-        title: apt.title || 'Cita',
+        title: 'Cita',
         start: new Date(apt.start_time),
         end: new Date(apt.end_time),
-        resourceId: apt.doctor_id,
         status: apt.status
     }))
 }
 
 export async function createAppointment(data: {
-    title: string
     start: Date
     end: Date
     patient_id?: string
-    doctor_id?: string
+    service_id?: string
 }) {
     const cookieStore = await cookies()
     const supabase = await createClient()
 
-    // Get current user to possibly auto-fill doctor_id
+    // Get current user and clinic
     const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('Not authenticated')
 
-    // Or just simple insert
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('clinic_id')
+        .eq('id', user.id)
+        .single()
+
+    if (!profile?.clinic_id) throw new Error('No clinic found')
+
     const { error } = await supabase.from('appointments').insert({
-        title: data.title,
         start_time: data.start.toISOString(),
         end_time: data.end.toISOString(),
-        patient_id: data.patient_id || null, // Allow null if optional or handle otherwise
-        doctor_id: data.doctor_id || user?.id, // Fallback to current user
-        clinic_id: (await supabase.from('profiles').select('clinic_id').eq('id', user?.id).single()).data?.clinic_id // Try to get clinic_id
+        patient_id: data.patient_id || null,
+        service_id: data.service_id || null,
+        clinic_id: profile.clinic_id,
+        status: 'pending'
     })
 
     if (error) {
