@@ -33,10 +33,11 @@ export default function PatientsPage() {
             setLoading(true)
             const data = await searchPatients(search)
 
-            // Map data to include hasPortalAccess
+            // Tempralmente deshabilitado hasta que se cree la tabla patient_users
             const patientsWithAccess = (data as any[]).map((patient) => ({
                 ...patient,
-                hasPortalAccess: patient.patient_users?.[0]?.is_active ?? false
+                hasPortalAccess: false
+                // patient.patient_users?.[0]?.is_active ?? false
             }))
 
             setPatients(patientsWithAccess)
