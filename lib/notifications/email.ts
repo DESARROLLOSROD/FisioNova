@@ -1,20 +1,15 @@
 import { Resend } from 'resend'
 
-const resendKey = process.env.RESEND_API_KEY
-const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
-
-let resend: Resend | null = null
-
-if (resendKey) {
-    resend = new Resend(resendKey)
-}
-
 export async function sendEmail(to: string, subject: string, html: string) {
-    if (!resend) {
+    const resendKey = process.env.RESEND_API_KEY
+
+    if (!resendKey) {
         console.warn('Resend client not initialized. Missing environment variables.')
-        // Return simulated success in dev if needed, or failure
         return { success: false, error: 'Resend not configured' }
     }
+
+    const resend = new Resend(resendKey)
+    const fromEmail = process.env.RESEND_FROM_EMAIL || 'onboarding@resend.dev'
 
     try {
         const data = await resend.emails.send({
