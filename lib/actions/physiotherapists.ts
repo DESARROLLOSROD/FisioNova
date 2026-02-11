@@ -20,7 +20,7 @@ export async function getPhysiotherapists() {
 
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, phone, specialties, license_number, bio, avatar_url, created_at')
+        .select('id, full_name, email, phone, specialties, license_number, bio, avatar_url, created_at')
         .eq('clinic_id', profile.clinic_id)
         .eq('role', 'physio')
         .order('full_name')
@@ -98,7 +98,7 @@ export async function createPhysiotherapist(formData: FormData) {
         .upsert({
             id: authData.user.id,
             full_name: fullName,
-            // email deleted from here as it doesn't exist on profiles
+            email,
             phone,
             role: 'physio',
             clinic_id: profile.clinic_id,
@@ -124,6 +124,7 @@ export async function updatePhysiotherapist(id: string, formData: FormData) {
     const supabase = await createClient()
 
     const fullName = formData.get('full_name') as string
+    const email = formData.get('email') as string
     const phone = formData.get('phone') as string
     const licenseNumber = formData.get('license_number') as string
     const bio = formData.get('bio') as string
@@ -134,6 +135,7 @@ export async function updatePhysiotherapist(id: string, formData: FormData) {
         .from('profiles')
         .update({
             full_name: fullName,
+            email, // Allow updating email in profile (does not affect auth)
             phone,
             license_number: licenseNumber,
             bio,
