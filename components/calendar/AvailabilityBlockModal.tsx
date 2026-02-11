@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { createAvailabilityBlock } from '@/lib/actions/availability'
 import { X, Clock, User, FileText } from 'lucide-react'
 
@@ -25,14 +25,35 @@ export default function AvailabilityBlockModal({
     const [error, setError] = useState('')
 
     const [formData, setFormData] = useState({
-        startDate: initialStartTime ? initialStartTime.toISOString().split('T')[0] : '',
-        startTime: initialStartTime ? initialStartTime.toTimeString().slice(0, 5) : '',
-        endDate: initialEndTime ? initialEndTime.toISOString().split('T')[0] : '',
-        endTime: initialEndTime ? initialEndTime.toTimeString().slice(0, 5) : '',
+        startDate: '',
+        startTime: '',
+        endDate: '',
+        endTime: '',
         reason: '',
         therapistId: '',
         applyToAll: true
     })
+
+    // Update form data when modal opens or props change
+    useEffect(() => {
+        if (isOpen && initialStartTime && initialEndTime) {
+            // Helper precise date formatter
+            const toLocalDate = (date: Date) => {
+                const year = date.getFullYear()
+                const month = String(date.getMonth() + 1).padStart(2, '0')
+                const day = String(date.getDate()).padStart(2, '0')
+                return `${year}-${month}-${day}`
+            }
+
+            setFormData(prev => ({
+                ...prev,
+                startDate: toLocalDate(initialStartTime),
+                startTime: initialStartTime.toTimeString().slice(0, 5),
+                endDate: toLocalDate(initialEndTime),
+                endTime: initialEndTime.toTimeString().slice(0, 5)
+            }))
+        }
+    }, [isOpen, initialStartTime, initialEndTime])
 
     if (!isOpen) return null
 
