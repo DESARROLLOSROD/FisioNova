@@ -156,13 +156,29 @@ export async function updatePhysiotherapist(id: string, formData: FormData) {
 export async function deletePhysiotherapist(id: string) {
     const supabase = await createClient()
 
-    // Soft delete by setting role to null or deleting the profile
-    const { error } = await supabase
+    // Verify current user is admin
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) throw new Error('No autenticado')
+
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+    const supabaseAdmin = createServiceClient(supabaseUrl, serviceRoleKey, {
+        auth: { autoRefreshToken: false, persistSession: false }
+    })
+
+    // Delete profile first
+    const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .delete()
         .eq('id', id)
 
-    if (error) throw error
+    if (profileError) throw new Error('Error al eliminar perfil: ' + profileError.message)
+
+    // Delete auth user
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(id)
+    if (authError) throw new Error('Error al eliminar usuario: ' + authError.message)
 
     revalidatePath('/dashboard/physiotherapists')
 }

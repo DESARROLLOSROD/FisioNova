@@ -23,6 +23,6 @@ export async function GET(request: Request) {
         }
     }
 
-    // return the user to an error page with instructions
-    return NextResponse.redirect(`${baseUrl}/auth/auth-code-error`)
+    // return the user to login with error message
+    return NextResponse.redirect(`${baseUrl}/login?error=auth-code-error`)
 }
