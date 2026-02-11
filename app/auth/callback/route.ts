@@ -19,11 +19,13 @@ export async function GET(request: Request) {
             } else if (forwardedHost) {
                 return NextResponse.redirect(`https://${forwardedHost}${next}`)
             } else {
-                return NextResponse.redirect(`${origin}${next}`)
+                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
+                return NextResponse.redirect(`${siteUrl}${next}`)
             }
         }
     }
 
+    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
     // return the user to an error page with instructions
-    return NextResponse.redirect(`${origin}/auth/auth-code-error`)
+    return NextResponse.redirect(`${siteUrl}/auth/auth-code-error`)
 }
