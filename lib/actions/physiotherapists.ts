@@ -2,6 +2,7 @@
 
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
+import { headers } from 'next/headers'
 
 export async function getPhysiotherapists() {
     const supabase = await createClient()
@@ -61,6 +62,9 @@ export async function createPhysiotherapist(formData: FormData) {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
+    // Get origin for cleaner redirect
+    const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://fisionova-production.up.railway.app'
+
     if (!serviceRoleKey) {
         throw new Error('Error de configuración: SUPABASE_SERVICE_ROLE_KEY faltante')
     }
@@ -76,7 +80,7 @@ export async function createPhysiotherapist(formData: FormData) {
     // Invite User via Email (creates auth user)
     // Note: This requires SMTP setup in Supabase or it will use default template
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/auth/callback?next=/update-password`,
+        redirectTo: `${origin}/auth/callback?next=/update-password`,
         data: {
             full_name: fullName,
             role: 'physio',
