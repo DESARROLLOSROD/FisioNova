@@ -56,13 +56,48 @@ export async function createPhysiotherapist(formData: FormData) {
 
     if (!profile?.clinic_id) throw new Error('Sin clínica asignada')
 
-    // Create auth user (using service role would be needed for this in production)
-    // For now, we'll create the profile directly and assume user creation happens separately
-    const { data: newProfile, error } = await supabase
-        .from('profiles')
-        .insert({
+    // Initialize Admin Client for User Creation
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
+    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
+
+    if (!serviceRoleKey) {
+        throw new Error('Error de configuración: SUPABASE_SERVICE_ROLE_KEY faltante')
+    }
+
+    const { createClient: createServiceClient } = await import('@supabase/supabase-js')
+    const supabaseAdmin = createServiceClient(supabaseUrl, serviceRoleKey, {
+        auth: {
+            autoRefreshToken: false,
+            persistSession: false
+        }
+    })
+
+    // Invite User via Email (creates auth user)
+    // Note: This requires SMTP setup in Supabase or it will use default template
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
+        data: {
             full_name: fullName,
-            email,
+            role: 'physio',
+            clinic_id: profile.clinic_id
+        }
+    })
+
+    if (authError) {
+        // Handle case where user already exists but maybe not in this clinic? -> For now just error
+        throw new Error('Error al invitar usuario: ' + authError.message)
+    }
+
+    if (!authData.user) {
+        throw new Error('No se pudo crear el usuario')
+    }
+
+    // Create/Update Profile
+    const { data: newProfile, error } = await supabaseAdmin
+        .from('profiles')
+        .upsert({
+            id: authData.user.id,
+            full_name: fullName,
+            email, // Store email in profile too for easy access
             phone,
             role: 'physio',
             clinic_id: profile.clinic_id,
@@ -73,7 +108,12 @@ export async function createPhysiotherapist(formData: FormData) {
         .select()
         .single()
 
-    if (error) throw error
+    if (error) {
+        // If profile creation fails, we might want to delete the auth user to keep consistency?
+        // But invite usually sends email immediately. 
+        console.error('Error creating profile:', error)
+        throw new Error('Error al crear perfil: ' + error.message)
+    }
 
     revalidatePath('/dashboard/physiotherapists')
     return newProfile
