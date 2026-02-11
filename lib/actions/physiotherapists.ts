@@ -57,6 +57,7 @@ export async function createPhysiotherapist(formData: FormData) {
     if (!profile?.clinic_id) throw new Error('Sin clínica asignada')
 
     // Initialize Admin Client for User Creation
+    console.log('Initializing admin client for physiotherapist creation')
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
