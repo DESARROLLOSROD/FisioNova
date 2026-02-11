@@ -9,7 +9,7 @@ import { Trash2, Edit } from 'lucide-react'
 interface Physiotherapist {
     id: string
     full_name: string
-    email: string
+    email?: string
     phone: string | null
     specialties: string[] | null
     license_number: string | null
@@ -90,7 +90,7 @@ export default function PhysiotherapistsPage() {
                             physios.map((physio) => (
                                 <tr key={physio.id} className="hover:bg-slate-50/50">
                                     <td className="px-6 py-4 font-medium text-slate-900">{physio.full_name}</td>
-                                    <td className="px-6 py-4 text-slate-600">{physio.email}</td>
+                                    <td className="px-6 py-4 text-slate-600">{physio.email || '-'}</td>
                                     <td className="px-6 py-4 text-slate-600">{physio.phone || '-'}</td>
                                     <td className="px-6 py-4 text-slate-600">
                                         {physio.specialties?.join(', ') || '-'}
