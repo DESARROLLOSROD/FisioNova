@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { Loader2 } from 'lucide-react'
@@ -11,7 +11,24 @@ export default function UpdatePasswordPage() {
     const [password, setPassword] = useState('')
     const [confirmPassword, setConfirmPassword] = useState('')
     const [loading, setLoading] = useState(false)
+    const [sessionReady, setSessionReady] = useState(false)
     const [error, setError] = useState<string | null>(null)
+
+    // Wait for Supabase to process hash fragments from invite link
+    useEffect(() => {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+                setSessionReady(true)
+            }
+        })
+
+        // Also check if already has session
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            if (session) setSessionReady(true)
+        })
+
+        return () => subscription.unsubscribe()
+    }, [supabase])
 
     const handleUpdatePassword = async (e: React.FormEvent) => {
         e.preventDefault()
@@ -44,6 +61,15 @@ export default function UpdatePasswordPage() {
         } finally {
             setLoading(false)
         }
+    }
+
+    if (!sessionReady) {
+        return (
+            <div className="flex items-center justify-center mt-20">
+                <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                <span className="ml-3 text-slate-600">Verificando invitación...</span>
+            </div>
+        )
     }
 
     return (

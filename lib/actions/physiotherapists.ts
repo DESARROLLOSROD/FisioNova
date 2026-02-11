@@ -80,7 +80,7 @@ export async function createPhysiotherapist(formData: FormData) {
     // Invite User via Email (creates auth user)
     // Note: This requires SMTP setup in Supabase or it will use default template
     const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${origin}/auth/callback?next=/update-password`,
+        redirectTo: `${origin}/update-password`,
         data: {
             full_name: fullName,
             role: 'physio',
