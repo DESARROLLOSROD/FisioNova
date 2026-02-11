@@ -91,7 +91,7 @@ export async function getAvailabilityBlocks(startDate: Date, endDate: Date) {
         .from('availability_blocks')
         .select(`
             *,
-            profiles (
+            profiles!availability_blocks_therapist_id_fkey (
                 first_name,
                 last_name
             )

@@ -36,6 +36,9 @@ export default function AgendaPage() {
     const [services, setServices] = useState<any[]>([])
     const [loading, setLoading] = useState(false)
 
+    // Block Mode State
+    const [isBlockMode, setIsBlockMode] = useState(false)
+
     // Form state
     const [formData, setFormData] = useState({
         patientId: '',
@@ -118,9 +121,17 @@ export default function AgendaPage() {
         }
     }, [])
 
-    // Handle slot selection (create new appointment)
+    // Handle slot selection (create new appointment OR block)
     const handleSelectSlot = useCallback(async (slotInfo: SlotInfo) => {
-        // Check if slot is available
+        setSelectedSlot(slotInfo)
+
+        // If in Block Mode, open Block Modal immediately
+        if (isBlockMode) {
+            setIsBlockModalOpen(true)
+            return
+        }
+
+        // Check if slot is available (only for appointments)
         const availability = await checkTimeSlotAvailability(slotInfo.start, slotInfo.end)
 
         if (!availability.available) {
@@ -128,11 +139,10 @@ export default function AgendaPage() {
             return
         }
 
-        setSelectedSlot(slotInfo)
         setSelectedEvent(null)
         setFormData({ patientId: '', serviceId: '', notes: '' })
         setIsModalOpen(true)
-    }, [])
+    }, [isBlockMode])
 
     const handleResendConfirmation = async () => {
         if (!selectedEvent?.id) return
@@ -155,6 +165,12 @@ export default function AgendaPage() {
 
     // Handle event selection (view/edit appointment)
     const handleSelectEvent = useCallback((event: CalendarEvent) => {
+        if (event.resource?.isBlock) {
+            // Optional: Handle block selection (e.g., delete block)
+            // For now, prevent opening appointment modal for blocks
+            return
+        }
+
         setSelectedEvent(event)
         setSelectedSlot(null)
         setFormData({
@@ -207,15 +223,39 @@ export default function AgendaPage() {
                         <Repeat className="h-4 w-4" />
                         Citas Recurrentes
                     </button>
+
                     <button
-                        onClick={() => setIsBlockModalOpen(true)}
-                        className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition flex items-center gap-2"
+                        onClick={() => setIsBlockMode(!isBlockMode)}
+                        className={`px-4 py-2 rounded-lg transition flex items-center gap-2 border ${isBlockMode
+                                ? 'bg-red-100 text-red-700 border-red-200 hover:bg-red-200'
+                                : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+                            }`}
                     >
-                        <Ban className="h-4 w-4" />
-                        Bloquear Horario
+                        <Ban className={`h-4 w-4 ${isBlockMode ? 'text-red-600' : 'text-gray-500'}`} />
+                        {isBlockMode ? 'Modo Bloqueo Activado' : 'Bloquear Horario'}
                     </button>
                 </div>
             </div>
+
+            {/* Block Mode Banner */}
+            {isBlockMode && (
+                <div className="bg-red-50 border-l-4 border-red-500 p-4 rounded-r-lg flex items-center justify-between animate-in fade-in slide-in-from-top-2">
+                    <div>
+                        <p className="text-sm font-medium text-red-800">
+                            Modo Bloqueo Activado
+                        </p>
+                        <p className="text-sm text-red-600 mt-1">
+                            Arrastra en el calendario para bloquear horarios. Haz clic en "Modo Bloqueo Activado" para salir.
+                        </p>
+                    </div>
+                    <button
+                        onClick={() => setIsBlockMode(false)}
+                        className="text-red-500 hover:text-red-700 p-2"
+                    >
+                        <X className="h-5 w-5" />
+                    </button>
+                </div>
+            )}
 
             {/* Legend */}
             <div className="flex items-center gap-4 p-4 bg-white rounded-lg border">
@@ -236,16 +276,22 @@ export default function AgendaPage() {
                     <div className="w-4 h-4 rounded bg-gray-500"></div>
                     <span className="text-sm">Completada</span>
                 </div>
+                <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded bg-gray-500 border-2 border-dashed border-gray-600 opacity-50"></div>
+                    <span className="text-sm">Bloqueado</span>
+                </div>
             </div>
 
             {/* Calendar */}
-            <AdvancedCalendar
-                events={events}
-                onEventDrop={handleEventDrop}
-                onEventResize={handleEventResize}
-                onSelectSlot={handleSelectSlot}
-                onSelectEvent={handleSelectEvent}
-            />
+            <div className={isBlockMode ? "ring-2 ring-red-500 ring-offset-2 rounded-xl transition-all" : ""}>
+                <AdvancedCalendar
+                    events={events}
+                    onEventDrop={handleEventDrop}
+                    onEventResize={handleEventResize}
+                    onSelectSlot={handleSelectSlot}
+                    onSelectEvent={handleSelectEvent}
+                />
+            </div>
 
             {/* Quick Appointment Modal */}
             {isModalOpen && (
@@ -387,7 +433,13 @@ export default function AgendaPage() {
             <AvailabilityBlockModal
                 isOpen={isBlockModalOpen}
                 onClose={() => setIsBlockModalOpen(false)}
-                onSuccess={loadData}
+                onSuccess={() => {
+                    loadData()
+                    // Optional: Turn off block mode after creating a block
+                    // setIsBlockMode(false) 
+                }}
+                initialStartTime={selectedSlot?.start}
+                initialEndTime={selectedSlot?.end}
             />
 
             {/* Recurring Appointment Modal */}

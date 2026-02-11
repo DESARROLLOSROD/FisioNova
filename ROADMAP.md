@@ -104,15 +104,14 @@
 
 ---
 
-### 9. Drag-to-Block en Agenda 🎯
-**Esfuerzo:** 1-2 horas | **Prioridad:** Alta | **Fecha planeada:** 11 Feb 2026
+### 9. Drag-to-Block en Agenda 🎯 ✅
+**Esfuerzo:** 1-2 horas | **Prioridad:** Alta | **Completado:** 11 Feb 2026
 
-- [ ] Habilitar selección por arrastre en calendario
-- [ ] Modal simplificado con horas pre-llenadas
-- [ ] Solo pedir razón del bloqueo
-- [ ] Opcional: Toggle "Modo Bloqueo"
-
-**Beneficio:** Crear bloqueos múltiples rápidamente (lunch, juntas, etc.)
+- ✅ Habilitar selección por arrastre en calendario
+- ✅ Modal simplificado con horas pre-llenadas
+- ✅ Solo pedir razón del bloqueo
+- ✅ Toggle "Modo Bloqueo" para activar/desactivar
+- **Impacto:** Crear bloqueos múltiples rápidamente (lunch, juntas, etc.)
 
 ---
 
@@ -134,15 +133,16 @@
 
 ---
 
-#### 10. Biblioteca de Ejercicios 📚
-**Esfuerzo:** 4-5 horas | **Prioridad:** Media
+#### 10. Biblioteca de Ejercicios 📚 ✅
+**Esfuerzo:** 4-5 horas | **Prioridad:** Media | **Completado:** 11 Feb 2026
 
-- [ ] CRUD de ejercicios terapéuticos
-- [ ] Categorías (cuello, espalda, rodilla, etc.)
-- [ ] Descripción detallada
-- [ ] Imágenes/GIFs demostrativos
-- [ ] Videos de YouTube embebidos
-- [ ] Asignar ejercicios a pacientes
+- ✅ CRUD de ejercicios terapéuticos
+- ✅ Categorías (cuello, espalda, rodilla, etc.)
+- ✅ Descripción detallada
+- ✅ Imágenes/GIFs demostrativos
+- ✅ Videos de YouTube embebidos
+- ✅ Clasificación por dificultad
+- [ ] Asignar ejercicios a pacientes (Pendiente de verificar integración en portal)
 - [ ] Crear rutinas/planes
 - [ ] Seguimiento de cumplimiento
 
