@@ -12,19 +12,24 @@ export default function UpdatePasswordPage() {
     const [confirmPassword, setConfirmPassword] = useState('')
     const [loading, setLoading] = useState(false)
     const [sessionReady, setSessionReady] = useState(false)
+    const [checkingSession, setCheckingSession] = useState(true)
     const [error, setError] = useState<string | null>(null)
 
-    // Wait for Supabase to process hash fragments from invite link
     useEffect(() => {
-        const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-            if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED' || event === 'INITIAL_SESSION') {
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+            console.log('Auth event:', event, 'Session:', !!session)
+            if (event === 'SIGNED_IN' && session) {
                 setSessionReady(true)
+                setCheckingSession(false)
             }
-        })
-
-        // Also check if already has session
-        supabase.auth.getSession().then(({ data: { session } }) => {
-            if (session) setSessionReady(true)
+            if (event === 'INITIAL_SESSION') {
+                // If INITIAL_SESSION has a session, we're good
+                if (session) {
+                    setSessionReady(true)
+                }
+                // Give time for hash fragment processing
+                setTimeout(() => setCheckingSession(false), 3000)
+            }
         })
 
         return () => subscription.unsubscribe()
@@ -63,11 +68,24 @@ export default function UpdatePasswordPage() {
         }
     }
 
-    if (!sessionReady) {
+    if (checkingSession) {
         return (
             <div className="flex items-center justify-center mt-20">
                 <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
                 <span className="ml-3 text-slate-600">Verificando invitación...</span>
+            </div>
+        )
+    }
+
+    if (!sessionReady) {
+        return (
+            <div className="glass rounded-xl p-8 space-y-6 w-full max-w-md mx-auto mt-20">
+                <div className="space-y-2 text-center">
+                    <h1 className="text-2xl font-bold text-red-600">Enlace inválido o expirado</h1>
+                    <p className="text-muted-foreground">
+                        El enlace de invitación ha expirado o ya fue utilizado. Contacta al administrador para recibir una nueva invitación.
+                    </p>
+                </div>
             </div>
         )
     }
