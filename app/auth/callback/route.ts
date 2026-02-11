@@ -6,26 +6,23 @@ export async function GET(request: Request) {
     const code = searchParams.get('code')
     const next = searchParams.get('next') ?? '/'
 
+    const getBaseUrl = () => {
+        const forwardedHost = request.headers.get('x-forwarded-host')
+        if (process.env.NODE_ENV === 'development') return origin
+        if (forwardedHost) return `https://${forwardedHost}`
+        return (process.env.NEXT_PUBLIC_SITE_URL || origin).replace(/\/+$/, '')
+    }
+
+    const baseUrl = getBaseUrl()
+
     if (code) {
         const supabase = await createClient()
         const { error } = await supabase.auth.exchangeCodeForSession(code)
         if (!error) {
-            const forwardedHost = request.headers.get('x-forwarded-host') // original origin before load balancer
-            const isLocalEnv = process.env.NODE_ENV === 'development'
-
-            if (isLocalEnv) {
-                // we can be sure that there is no load balancer in between, so no need to watch for X-Forwarded-Host
-                return NextResponse.redirect(`${origin}${next}`)
-            } else if (forwardedHost) {
-                return NextResponse.redirect(`https://${forwardedHost}${next}`)
-            } else {
-                const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
-                return NextResponse.redirect(`${siteUrl}${next}`)
-            }
+            return NextResponse.redirect(`${baseUrl}${next}`)
         }
     }
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || origin
     // return the user to an error page with instructions
-    return NextResponse.redirect(`${siteUrl}/auth/auth-code-error`)
+    return NextResponse.redirect(`${baseUrl}/auth/auth-code-error`)
 }
