@@ -20,7 +20,7 @@ export async function getPhysiotherapists() {
 
     const { data, error } = await supabase
         .from('profiles')
-        .select('id, full_name, email, phone, specialties, license_number, bio, avatar_url, created_at')
+        .select('id, full_name, phone, specialties, license_number, bio, avatar_url, created_at')
         .eq('clinic_id', profile.clinic_id)
         .eq('role', 'physio')
         .order('full_name')
@@ -98,7 +98,7 @@ export async function createPhysiotherapist(formData: FormData) {
         .upsert({
             id: authData.user.id,
             full_name: fullName,
-            email, // Store email in profile too for easy access
+            // email deleted from here as it doesn't exist on profiles
             phone,
             role: 'physio',
             clinic_id: profile.clinic_id,
