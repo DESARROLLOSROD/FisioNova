@@ -119,7 +119,7 @@ export async function getPayments(filters?: { startDate?: string; endDate?: stri
 
     let query = supabase
         .from('payments')
-        .select('*, patients(first_name, last_name), services(name)')
+        .select('*, patients(first_name, last_name), services!payments_service_id_fkey(name)')
         .eq('clinic_id', profile.clinic_id)
 
     if (filters?.startDate) {
@@ -193,7 +193,7 @@ export async function getFinancialReport(startDate: string, endDate: string) {
 
     const { data: payments } = await supabase
         .from('payments')
-        .select('amount, payment_method, services(name)')
+        .select('amount, payment_method, services!payments_service_id_fkey(name)')
         .eq('clinic_id', profile.clinic_id)
         .eq('status', 'completed')
         .gte('created_at', startDate)
