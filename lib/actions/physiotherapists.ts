@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { revalidatePath } from 'next/cache'
 import { headers } from 'next/headers'
+import crypto from 'crypto'
+import { sendPhysioWelcomeEmail } from '@/lib/emails/physio-welcome'
 
 export async function getPhysiotherapists() {
     const supabase = await createClient()
@@ -58,12 +60,10 @@ export async function createPhysiotherapist(formData: FormData) {
     if (!profile?.clinic_id) throw new Error('Sin clínica asignada')
 
     // Initialize Admin Client for User Creation
-    console.log('Initializing admin client for physiotherapist creation')
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
     const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
 
-    // Get origin for cleaner redirect
-    const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_APP_URL || 'https://fisionova-production.up.railway.app'
+    const origin = (await headers()).get('origin') || process.env.NEXT_PUBLIC_SITE_URL || 'https://fisionova-production.up.railway.app'
 
     if (!serviceRoleKey) {
         throw new Error('Error de configuración: SUPABASE_SERVICE_ROLE_KEY faltante')
@@ -77,11 +77,15 @@ export async function createPhysiotherapist(formData: FormData) {
         }
     })
 
-    // Invite User via Email (creates auth user)
-    // Note: This requires SMTP setup in Supabase or it will use default template
-    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.inviteUserByEmail(email, {
-        redirectTo: `${origin}/update-password`,
-        data: {
+    // Generate secure random password
+    const tempPassword = crypto.randomBytes(6).toString('base64url')
+
+    // Create user directly with password (no invite link needed)
+    const { data: authData, error: authError } = await supabaseAdmin.auth.admin.createUser({
+        email,
+        password: tempPassword,
+        email_confirm: true,
+        user_metadata: {
             full_name: fullName,
             role: 'physio',
             clinic_id: profile.clinic_id
@@ -89,8 +93,7 @@ export async function createPhysiotherapist(formData: FormData) {
     })
 
     if (authError) {
-        // Handle case where user already exists but maybe not in this clinic? -> For now just error
-        throw new Error('Error al invitar usuario: ' + authError.message)
+        throw new Error('Error al crear usuario: ' + authError.message)
     }
 
     if (!authData.user) {
@@ -115,10 +118,33 @@ export async function createPhysiotherapist(formData: FormData) {
         .single()
 
     if (error) {
-        // If profile creation fails, we might want to delete the auth user to keep consistency?
-        // But invite usually sends email immediately. 
+        // Clean up auth user if profile creation fails
+        await supabaseAdmin.auth.admin.deleteUser(authData.user.id)
         console.error('Error creating profile:', error)
         throw new Error('Error al crear perfil: ' + error.message)
+    }
+
+    // Get clinic name for the email
+    const { data: clinic } = await supabaseAdmin
+        .from('clinics')
+        .select('name')
+        .eq('id', profile.clinic_id)
+        .single()
+
+    // Send credentials via email
+    const loginUrl = origin.replace(/\/+$/, '') + '/login'
+    try {
+        await sendPhysioWelcomeEmail({
+            to: email,
+            physioName: fullName,
+            clinicName: clinic?.name || 'Tu Clínica',
+            email,
+            tempPassword,
+            loginUrl
+        })
+    } catch (emailError) {
+        console.error('Error sending welcome email:', emailError)
+        // Don't fail the whole operation if email fails
     }
 
     revalidatePath('/dashboard/physiotherapists')
