@@ -100,6 +100,7 @@ export default function PatientsPage() {
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Email</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Teléfono</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Portal</th>
+                            <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Clínica</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Recordatorios</th>
                             <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase">Acciones</th>
                         </tr>
@@ -144,6 +145,9 @@ export default function PatientsPage() {
                                                 Sin email
                                             </span>
                                         )}
+                                    </td>
+                                    <td className="px-6 py-4 text-xs text-slate-500">
+                                        {(patient as any).clinics?.name || '-'}
                                     </td>
                                     <td className="px-6 py-4">
                                         <button

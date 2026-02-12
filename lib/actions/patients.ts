@@ -49,7 +49,7 @@ export async function searchPatients(query: string) {
 
     let queryBuilder = supabase
         .from('patients')
-        .select('id, first_name, last_name, email, phone, created_at, patient_users(is_active)')
+        .select('id, first_name, last_name, email, phone, created_at, patient_users(is_active), clinics(name)')
 
     if (query) {
         queryBuilder = queryBuilder.or(`first_name.ilike.%${query}%,last_name.ilike.%${query}%,email.ilike.%${query}%`)
