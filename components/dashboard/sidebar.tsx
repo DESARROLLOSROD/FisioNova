@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+
 import { cn } from '@/lib/utils'
 import {
     LayoutDashboard,
@@ -16,8 +16,13 @@ import {
     Copy
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { useRouter } from 'next/navigation'
-import { useEffect, useState } from 'react'
+import { PERMISSIONS, hasPermission } from '@/lib/auth/permissions'
+import { useRouter, usePathname } from 'next/navigation'
+
+interface DashboardSidebarProps {
+
+    permissions?: string[]
+}
 
 const routes = [
     {
@@ -25,83 +30,77 @@ const routes = [
         icon: LayoutDashboard,
         href: '/dashboard',
         active: (pathname: string) => pathname === '/dashboard',
+        permission: PERMISSIONS.VIEW_DASHBOARD,
     },
     {
         label: 'Agenda',
         icon: Calendar,
         href: '/dashboard/agenda',
         active: (pathname: string) => pathname.startsWith('/dashboard/agenda'),
+        permission: PERMISSIONS.VIEW_AGENDA,
     },
     {
         label: 'Pacientes',
         icon: Users,
         href: '/dashboard/patients',
         active: (pathname: string) => pathname.startsWith('/dashboard/patients'),
+        permission: PERMISSIONS.VIEW_PATIENTS,
     },
     {
         label: 'Fisioterapeutas',
         icon: Activity,
         href: '/dashboard/physiotherapists',
         active: (pathname: string) => pathname.startsWith('/dashboard/physiotherapists'),
+        permission: PERMISSIONS.VIEW_PHYSIOS,
     },
     {
         label: 'Usuarios',
         icon: Shield,
         href: '/dashboard/users',
         active: (pathname: string) => pathname.startsWith('/dashboard/users'),
+        permission: PERMISSIONS.VIEW_USERS,
     },
     {
         label: 'Expedientes',
         icon: FileText,
         href: '/dashboard/emr',
         active: (pathname: string) => pathname.startsWith('/dashboard/emr'),
+        permission: PERMISSIONS.VIEW_EMR,
     },
     {
         label: 'Finanzas',
         icon: FileText,
         href: '/dashboard/finance',
         active: (pathname: string) => pathname.startsWith('/dashboard/finance'),
+        permission: PERMISSIONS.VIEW_FINANCE,
     },
     {
         label: 'Ejercicios',
         icon: Dumbbell,
         href: '/dashboard/exercises',
         active: (pathname: string) => pathname.startsWith('/dashboard/exercises'),
+        permission: PERMISSIONS.VIEW_EXERCISES,
     },
     {
         label: 'Plantillas',
         icon: Copy,
         href: '/dashboard/templates',
         active: (pathname: string) => pathname.startsWith('/dashboard/templates'),
+        permission: PERMISSIONS.VIEW_TEMPLATES,
     },
     {
         label: 'Configuración',
         icon: Settings,
         href: '/dashboard/settings',
         active: (pathname: string) => pathname.startsWith('/dashboard/settings'),
+        permission: PERMISSIONS.VIEW_SETTINGS,
     },
 ]
 
-export function DashboardSidebar() {
+export function DashboardSidebar({ permissions = [] }: DashboardSidebarProps) {
     const pathname = usePathname()
     const router = useRouter()
     const supabase = createClient()
-    const [isAdmin, setIsAdmin] = useState(false)
-
-    useEffect(() => {
-        const checkRole = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-
-            if (user) {
-                const { data: role, error } = await supabase.rpc('get_my_role')
-
-                if (!error && role === 'super_admin') {
-                    setIsAdmin(true)
-                }
-            }
-        }
-        checkRole()
-    }, [supabase])
 
     const handleSignOut = async () => {
         await supabase.auth.signOut()
@@ -124,28 +123,30 @@ export function DashboardSidebar() {
                 </Link>
 
                 <div className="space-y-2">
-                    {routes.map((route) => (
-                        <Link
-                            key={route.href}
-                            href={route.href}
-                            className={cn(
-                                "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer rounded-xl transition-all duration-200 relative overflow-hidden",
-                                route.active(pathname)
-                                    ? "bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-400 border border-blue-500/10"
-                                    : "text-slate-400 hover:text-white hover:bg-white/5"
-                            )}
-                        >
-                            {route.active(pathname) && (
-                                <div className="absolute left-0 top-0 h-full w-1 bg-blue-500 rounded-r-full" />
-                            )}
-                            <div className="flex items-center flex-1 z-10">
-                                <route.icon className={cn("h-5 w-5 mr-3 transition-colors", route.active(pathname) ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300")} />
-                                {route.label}
-                            </div>
-                        </Link>
-                    ))}
+                    {routes
+                        .filter(route => hasPermission(permissions, route.permission))
+                        .map((route) => (
+                            <Link
+                                key={route.href}
+                                href={route.href}
+                                className={cn(
+                                    "text-sm group flex p-3 w-full justify-start font-medium cursor-pointer rounded-xl transition-all duration-200 relative overflow-hidden",
+                                    route.active(pathname)
+                                        ? "bg-gradient-to-r from-blue-600/20 to-indigo-600/20 text-blue-400 border border-blue-500/10"
+                                        : "text-slate-400 hover:text-white hover:bg-white/5"
+                                )}
+                            >
+                                {route.active(pathname) && (
+                                    <div className="absolute left-0 top-0 h-full w-1 bg-blue-500 rounded-r-full" />
+                                )}
+                                <div className="flex items-center flex-1 z-10">
+                                    <route.icon className={cn("h-5 w-5 mr-3 transition-colors", route.active(pathname) ? "text-blue-400" : "text-slate-500 group-hover:text-slate-300")} />
+                                    {route.label}
+                                </div>
+                            </Link>
+                        ))}
 
-                    {isAdmin && (
+                    {hasPermission(permissions, PERMISSIONS.MANAGE_ROLES) && (
                         <Link
                             href="/dashboard/admin"
                             className={cn(

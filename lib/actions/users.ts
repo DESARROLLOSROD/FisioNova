@@ -21,7 +21,7 @@ export async function getUsers() {
         .from('profiles')
         .select('id, full_name, email, phone, role, created_at')
         .eq('clinic_id', profile.clinic_id)
-        .in('role', ['clinic_manager', 'staff'])
+
         .order('full_name')
 
     if (error) {

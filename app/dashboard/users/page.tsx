@@ -2,7 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { getUsers, deleteUser } from '@/lib/actions/users'
+import { getRoles } from '@/lib/actions/roles'
 import UserModal from '@/components/users/UserModal'
+
+
 import PageHeader from '@/components/ui/PageHeader'
 import { Trash2, Edit } from 'lucide-react'
 
@@ -16,20 +19,27 @@ interface User {
 
 export default function UsersPage() {
     const [users, setUsers] = useState<User[]>([])
+    const [roles, setRoles] = useState<any[]>([])
     const [isModalOpen, setIsModalOpen] = useState(false)
+
     const [editingUser, setEditingUser] = useState<User | null>(null)
     const [loading, setLoading] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
 
     useEffect(() => {
-        const fetchUsers = async () => {
+        const fetchData = async () => {
             setLoading(true)
-            const data = await getUsers()
-            setUsers(data as User[])
+            const [usersData, rolesData] = await Promise.all([
+                getUsers(),
+                getRoles()
+            ])
+            setUsers(usersData as User[])
+            setRoles(rolesData)
             setLoading(false)
         }
-        fetchUsers()
+        fetchData()
     }, [refreshKey])
+
 
     const handleEdit = (user: User) => {
         setEditingUser(user)
@@ -52,13 +62,11 @@ export default function UsersPage() {
         setEditingUser(null)
     }
 
-    const getRoleName = (role: string) => {
-        const roles: Record<string, string> = {
-            'clinic_manager': 'Gerente',
-            'staff': 'Personal'
-        }
-        return roles[role] || role
+    const getRoleName = (roleCode: string) => {
+        const role = roles.find(r => r.code === roleCode)
+        return role ? role.name : roleCode
     }
+
 
     return (
         <div className="space-y-6">

@@ -2,6 +2,9 @@
 
 import { useState } from 'react'
 import { createUser, updateUser } from '@/lib/actions/users'
+import { getRoles } from '@/lib/actions/roles'
+import { useEffect } from 'react'
+
 import { X } from 'lucide-react'
 
 interface UserModalProps {
@@ -13,6 +16,27 @@ interface UserModalProps {
 
 export default function UserModal({ isOpen, onClose, onSuccess, user }: UserModalProps) {
     const [loading, setLoading] = useState(false)
+    const [roles, setRoles] = useState<any[]>([])
+    const [loadingRoles, setLoadingRoles] = useState(false)
+
+    useEffect(() => {
+        if (isOpen) {
+            const fetchRoles = async () => {
+                setLoadingRoles(true)
+                try {
+                    const data = await getRoles()
+                    setRoles(data)
+                } catch (error) {
+                    console.error('Error fetching roles', error)
+                } finally {
+                    setLoadingRoles(false)
+                }
+            }
+            fetchRoles()
+        }
+    }, [isOpen])
+
+
 
     if (!isOpen) return null
 
@@ -88,11 +112,21 @@ export default function UserModal({ isOpen, onClose, onSuccess, user }: UserModa
                         <select
                             name="role"
                             required
-                            defaultValue={user?.role || 'staff'}
+                            defaultValue={user?.role || ''}
                             className="w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
                         >
-                            <option value="staff">Personal</option>
-                            <option value="clinic_manager">Gerente</option>
+                            <option value="" disabled>Seleccionar rol</option>
+                            {loadingRoles ? (
+                                <option disabled>Cargando roles...</option>
+                            ) : (
+                                roles
+                                    .filter(r => r.code !== 'super_admin') // Hide super_admin
+                                    .map(role => (
+                                        <option key={role.code} value={role.code}>
+                                            {role.name}
+                                        </option>
+                                    ))
+                            )}
                         </select>
                     </div>
 
@@ -113,7 +147,7 @@ export default function UserModal({ isOpen, onClose, onSuccess, user }: UserModa
                         </button>
                     </div>
                 </form>
-            </div>
-        </div>
+            </div >
+        </div >
     )
 }
